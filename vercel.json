@@ -1,0 +1,12 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/create-qris",
+      "destination": "/api/create-qris.js"
+    },
+    {
+      "source": "/api/callback",
+      "destination": "/api/callback.js"
+    }
+  ]
+}
