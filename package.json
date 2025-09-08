@@ -1,0 +1,14 @@
+{
+  "name": "menfess-sumatra",
+  "version": "1.0.0",
+  "description": "Backend serverless untuk proyek Menfess Sumatra.",
+  "main": "api/create-qris.js",
+  "scripts": {
+    "start": "vercel dev"
+  },
+  "dependencies": {
+    "axios": "^1.7.2",
+    "crypto": "^1.0.1",
+    "@supabase/supabase-js": "^2.0.0"
+  }
+}
