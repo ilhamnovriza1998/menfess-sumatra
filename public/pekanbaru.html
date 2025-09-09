@@ -90,58 +90,55 @@
     </div>
   </div>
 
+  
   <script>
-    // Ambil elemen form dan tombol
-    const menfessForm = document.getElementById('menfessForm');
-    const submitBtn = document.getElementById('submitBtn');
-    const qrisSection = document.getElementById('qrisSection');
-    const qrisImage = document.getElementById('qrisImage');
+    document.addEventListener('DOMContentLoaded', () => {
+        const menfessForm = document.getElementById('menfessForm');
+        const qrisSection = document.getElementById('qrisSection');
+        const qrisImage = document.getElementById('qrisImage');
+        const submitBtn = document.getElementById('submitBtn');
 
-    submitBtn.addEventListener('click', async (e) => {
-      e.preventDefault();
+        menfessForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
 
-      const menfess = document.getElementById('menfess').value;
-      const gambar = document.getElementById('gambar').files[0];
+            const menfess = document.getElementById('menfess').value;
+            // Gambar tidak digunakan dalam payload JSON
+            // const gambar = document.getElementById('gambar').files[0];
 
-      if (!menfess) {
-        alert("Isi menfess tidak boleh kosong!");
-        return;
-      }
+            if (!menfess) {
+                alert("Isi menfess tidak boleh kosong!");
+                return;
+            }
 
-      const formData = new FormData();
-      formData.append('menfess', menfess);
-      if (gambar) {
-        formData.append('gambar', gambar);
-      }
+            try {
+                // Ganti URL ini dengan URL backend Vercel Anda yang sudah di-deploy
+                const backendUrl = 'https://menfess-sumatra.vercel.app/api/create-qris';
+                
+                const response = await fetch(backendUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ menfess: menfess })
+                });
 
-      try {
-        // Ganti URL ini dengan URL backend Vercel Anda yang sudah di-deploy
-        const backendUrl = 'https://backend-menfess.vercel.app/api/create-qris';
-        
-        const response = await fetch(backendUrl, {
-          method: 'POST',
-          body: formData,
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    // Sembunyikan formulir dan tampilkan QRIS
+                    menfessForm.style.display = 'none';
+                    qrisSection.style.display = 'block';
+
+                    // Set sumber gambar QRIS dari respons backend
+                    qrisImage.src = result.qris_url;
+                } else {
+                    alert(`Gagal membuat QRIS: ${result.message}`);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Terjadi kesalahan saat menghubungi server.');
+            }
         });
-
-        const result = await response.json();
-
-        if (response.ok && result.success) {
-          // Sembunyikan formulir dan tampilkan QRIS
-          menfessForm.style.display = 'none';
-          qrisSection.style.display = 'block';
-
-          // Set sumber gambar QRIS dari respons backend
-          qrisImage.src = result.qris_url;
-
-        } else {
-          alert(`Gagal membuat QRIS: ${result.message}`);
-        }
-      } catch (error) {
-        console.error('Error:', error);
-        alert('Terjadi kesalahan saat menghubungi server.');
-      }
     });
-  </script>
+</script>
 
 </body>
 </html>
