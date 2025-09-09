@@ -10,7 +10,7 @@
     "express": "latest",
     "serverless-http": "latest",
     "multer": "1.4.5-lts.1",
-    "form-data": "latest"
+    "form-data": "latest",
+    "@supabase/supabase-js": "2.44.4"
   }
 }
-
