@@ -1,7 +1,10 @@
 import crypto from "crypto";
 
 export function generateSignature(body, secret) {
-  // Body harus string (JSON stringify)
+  if (!secret) {
+    throw new Error("❌ GOBIZ_ORDER_RELAY_SECRET is missing. Check your Vercel env vars.");
+  }
+
   const payload = typeof body === "string" ? body : JSON.stringify(body);
 
   return crypto
