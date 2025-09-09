@@ -1,17 +1,15 @@
 {
   "name": "menfess-sumatra",
   "version": "1.0.0",
-  "description": "Menfess Sumatra dengan backend QRIS dan Twitter API",
-  "main": "api/index.js",
+  "private": true,
   "scripts": {
-    "dev": "vercel dev",
     "start": "node api/index.js"
   },
   "dependencies": {
-    "axios": "^1.6.8",
-    "express": "^4.18.2",
-    "serverless-http": "^3.2.0",
-    "multer": "^1.4.5", 
-    "form-data": "^4.0.0"
+    "axios": "latest",
+    "express": "latest",
+    "serverless-http": "latest",
+    "multer": "1.4.5-lts.1",
+    "form-data": "latest"
   }
 }
