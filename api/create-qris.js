@@ -1,70 +1,44 @@
-import axios from 'axios';
-import { createClient } from '@supabase/supabase-js';
+import axios from "axios";
+import { generateSignature } from "../utils/gobiz-signature.js";
 
 export default async function handler(req, res) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ message: 'Method Not Allowed' });
-  }
-
-  const { menfess } = req.body;
-
-  if (!menfess) {
-    return res.status(400).json({ success: false, message: 'Isi menfess tidak boleh kosong.' });
+  if (req.method !== "POST") {
+    return res.status(405).json({ message: "Method Not Allowed" });
   }
 
   try {
     const orderId = `menfess-${Date.now()}`;
     const grossAmount = 5000;
 
-    const supabase = createClient(
-      process.env.SUPABASE_URL,
-      process.env.SUPABASE_ANON_KEY
-    );
+    const body = {
+      partner_tx_id: orderId,
+      partner_id: process.env.GOBIZ_PARTNER_ID,
+      payment_amount: grossAmount,
+      payment_method: "QRIS",
+      currency: "IDR",
+      callback_url: `${process.env.BASE_URL}/api/callback`
+    };
 
-    // --- Langkah 1: Simpan menfess ke database Supabase ---
-    const { data, error: insertError } = await supabase
-      .from('menfess_posts')
-      .insert([
-        { order_id: orderId, content: menfess, status: 'PENDING' }
-      ]);
+    const signature = generateSignature(body, process.env.GOBIZ_ORDER_RELAY_SECRET);
 
-    if (insertError) {
-      throw insertError;
-    }
-
-    // --- Langkah 2: Buat QRIS di Midtrans ---
-    const midtransResponse = await axios.post(
-      'https://api.sandbox.midtrans.com/v2/charge',
-      {
-        payment_type: 'qris',
-        transaction_details: {
-          order_id: orderId,
-          gross_amount: grossAmount,
-        },
-        qris: {
-          acquirer_id: process.env.GOPAY_PARTNER_ID,
-        }
-      },
+    const response = await axios.post(
+      "https://api.gopay.com/v1/orders",
+      body,
       {
         headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
-          'Authorization': `Basic ${Buffer.from(process.env.GOPAY_APP_SECRET + ':').toString('base64')}`,
+          "Content-Type": "application/json",
+          "X-App-Id": process.env.GOBIZ_APP_ID,
+          "X-Signature": signature,
         },
       }
     );
 
-    const qrisUrl = midtransResponse.data.actions.find(action => action.name === 'generate-qr-code').url;
-
     res.status(200).json({
       success: true,
-      qris_url: qrisUrl,
-      order_id: orderId,
-      message: 'QRIS berhasil dibuat, silakan lakukan pembayaran.'
+      data: response.data,
     });
-
   } catch (error) {
-    console.error('Error creating QRIS:', error.message);
-    res.status(500).json({ success: false, message: 'Gagal membuat QRIS.' });
+    console.error("Error creating order:", error.response?.data || error.message);
+    res.status(500).json({ success: false, message: "Gagal membuat QRIS." });
   }
 }
