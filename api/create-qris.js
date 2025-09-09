@@ -10,6 +10,7 @@ export default async function handler(req, res) {
     const orderId = `menfess-${Date.now()}`;
     const grossAmount = 5000;
 
+    // 👇 body sesuai format GoBiz API
     const body = {
       partner_tx_id: orderId,
       partner_id: process.env.GOBIZ_PARTNER_ID,
@@ -19,10 +20,12 @@ export default async function handler(req, res) {
       callback_url: `${process.env.BASE_URL}/api/callback`
     };
 
+    // Buat signature
     const signature = generateSignature(body, process.env.GOBIZ_ORDER_RELAY_SECRET);
 
+    // 🔗 GoBiz Sandbox endpoint
     const response = await axios.post(
-      "https://api.gopay.com/v1/orders",
+      "https://api-sandbox.partner.gopayapi.com/v1/orders",
       body,
       {
         headers: {
@@ -33,12 +36,16 @@ export default async function handler(req, res) {
       }
     );
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       data: response.data,
     });
   } catch (error) {
     console.error("Error creating order:", error.response?.data || error.message);
-    res.status(500).json({ success: false, message: "Gagal membuat QRIS." });
+    return res.status(500).json({
+      success: false,
+      message: "Gagal membuat QRIS.",
+      error: error.response?.data || error.message,
+    });
   }
 }
