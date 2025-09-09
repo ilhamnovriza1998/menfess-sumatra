@@ -1,14 +1,39 @@
-import crypto from "crypto";
+const axios = require("axios");
 
-export function generateSignature(body, secret) {
-  if (!secret) {
-    throw new Error("❌ GOBIZ_ORDER_RELAY_SECRET is missing. Check your env vars.");
+let cachedToken = null;
+let tokenExpiry = null;
+
+async function getAccessToken() {
+  // kalau token masih valid, pakai ulang
+  if (cachedToken && tokenExpiry && new Date() < tokenExpiry) {
+    return cachedToken;
   }
 
-  const payload = typeof body === "string" ? body : JSON.stringify(body);
+  try {
+    const response = await axios.post(
+      "https://integration-goauth.gojekapi.com/token", // ✅ Sandbox OAuth URL
+      new URLSearchParams({
+        grant_type: "client_credentials",
+        client_id: process.env.GOBIZ_CLIENT_ID,
+        client_secret: process.env.GOBIZ_CLIENT_SECRET,
+      }),
+      {
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+      }
+    );
 
-  return crypto
-    .createHmac("sha256", secret)
-    .update(payload)
-    .digest("hex");
+    const { access_token, expires_in } = response.data;
+
+    cachedToken = access_token;
+    tokenExpiry = new Date(Date.now() + expires_in * 1000);
+
+    return access_token;
+  } catch (err) {
+    console.error("Failed to get access token:", err.response?.data || err.message);
+    throw new Error("OAuth token request failed");
+  }
 }
+
+module.exports = { getAccessToken };
