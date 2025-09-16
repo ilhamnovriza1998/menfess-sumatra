@@ -2,51 +2,55 @@ import multiparty from "multiparty";
 import fs from "fs";
 import Twitter from "twitter-lite";
 
+const client = new Twitter({
+  consumer_key: process.env.TWITTER_APP_KEY,
+  consumer_secret: process.env.TWITTER_APP_SECRET,
+  access_token_key: process.env.TWITTER_ACCESS_TOKEN,
+  access_token_secret: process.env.TWITTER_ACCESS_SECRET,
+});
+
+export const config = {
+  api: {
+    bodyParser: false, // disable bawaan agar multiparty bisa parse form-data
+  },
+};
+
 export default async function handler(req, res) {
   if (req.method !== "POST") {
-    return res.status(405).json({ success: false, error: "Method not allowed" });
+    return res.status(405).json({ error: "Method not allowed" });
   }
 
   const form = new multiparty.Form();
 
   form.parse(req, async (err, fields, files) => {
-    if (err) {
-      console.error("Parse error:", err);
-      return res.status(400).json({ success: false, error: "Invalid form data" });
-    }
-    const text = (fields.text && fields.text[0]) || "";
+    if (err) return res.status(500).json({ error: "Form parse error" });
 
     try {
-      const client = new Twitter({
-        consumer_key: process.env.TWITTER_CONSUMER_KEY,
-        consumer_secret: process.env.TWITTER_CONSUMER_SECRET,
-        access_token_key: process.env.TWITTER_ACCESS_TOKEN,
-        access_token_secret: process.env.TWITTER_ACCESS_SECRET,
-      });
-
+      const text = fields.text?.[0] || "";
       let mediaId = null;
-      if (files.image && files.image[0] && files.image[0].path) {
-        const imgPath = files.image[0].path;
-        const imgData = fs.readFileSync(imgPath);
-        const b64 = imgData.toString("base64");
 
-        const mediaRes = await client.post("media/upload", { media: b64 });
-        mediaId = mediaRes.media_id_string;
-
-        try { fs.unlinkSync(imgPath); } catch(e) { /* ignore */ }
+      // Upload media kalau ada file gambar
+      if (files.image && files.image[0]) {
+        const filePath = files.image[0].path;
+        const mediaData = fs.readFileSync(filePath);
+        const mediaUpload = await client.post("media/upload", {
+          media: mediaData,
+        });
+        mediaId = mediaUpload.media_id_string;
       }
 
+      // Posting tweet
       const params = { status: text };
       if (mediaId) {
         params.media_ids = mediaId;
       }
 
-      const tweet = await client.post("statuses/update", params);
+      await client.post("statuses/update", params);
 
-      return res.status(200).json({ success: true, tweet });
+      res.json({ success: true, message: "Tweet berhasil diposting" });
     } catch (error) {
-      console.error("Twitter error:", error);
-      return res.status(500).json({ success: false, error: error.message || "Unknown error" });
+      console.error("Error posting tweet:", error);
+      res.status(500).json({ error: "Gagal posting tweet" });
     }
   });
 }
