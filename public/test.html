@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Debug API Menfess</title>
+</head>
+<body>
+  <h1>Debug API Menfess 🚀</h1>
+
+  <form id="debugForm" enctype="multipart/form-data">
+    <label>Teks:</label><br>
+    <textarea name="text" rows="3" cols="40"></textarea><br><br>
+
+    <label>Upload Gambar:</label><br>
+    <input type="file" name="image"><br><br>
+
+    <button type="submit">Kirim</button>
+  </form>
+
+  <h2>Respon:</h2>
+  <pre id="output"></pre>
+
+  <script>
+    const form = document.getElementById("debugForm");
+    const output = document.getElementById("output");
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const formData = new FormData(form);
+
+      try {
+        const res = await fetch("/api/post", {
+          method: "POST",
+          body: formData
+        });
+        const data = await res.json();
+        output.textContent = JSON.stringify(data, null, 2);
+      } catch (err) {
+        output.textContent = "⚠️ Error: " + err.message;
+      }
+    });
+  </script>
+</body>
+</html>
