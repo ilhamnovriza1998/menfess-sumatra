@@ -110,33 +110,42 @@
       }
     });
 
-    // Submit form ke backend
-    tweetForm.addEventListener('submit', async e => {
-      e.preventDefault();
-      response.textContent = "Mengirim menfess...";
-      response.style.background = "rgba(255,193,7,0.2)";
+    // Form submission
+const tweetForm = document.getElementById('tweetForm');
+const response = document.getElementById('response');
 
-      const formData = new FormData(tweetForm);
+tweetForm.addEventListener('submit', async function(e) {
+  e.preventDefault();
+  
+  response.textContent = 'Mengirim menfess...';
+  response.style.background = 'rgba(255, 193, 7, 0.2)';
 
-      try {
-        const res = await fetch('/api/tweet', { method: 'POST', body: formData });
-        const data = await res.json();
+  const formData = new FormData(tweetForm);
 
-        if (data.success) {
-          response.textContent = "✅ Menfess berhasil dikirim!";
-          response.style.background = "rgba(40,167,69,0.2)";
-          tweetForm.reset();
-          fileName.textContent = 'Belum ada gambar dipilih';
-          previewImage.style.display = 'none';
-        } else {
-          response.textContent = "❌ Gagal: " + (data.error || "Terjadi kesalahan.");
-          response.style.background = "rgba(220,53,69,0.2)";
-        }
-      } catch (err) {
-        response.textContent = "❌ Error koneksi: " + err.message;
-        response.style.background = "rgba(220,53,69,0.2)";
-      }
+  try {
+    const res = await fetch("/api/tweet", {
+      method: "POST",
+      body: formData
     });
+    const data = await res.json();
+
+    if (res.ok) {
+      response.textContent = "✅ Menfess berhasil dikirim!";
+      response.style.background = 'rgba(40, 167, 69, 0.2)';
+    } else {
+      response.textContent = "❌ Gagal: " + (data.error || "Terjadi kesalahan");
+      response.style.background = 'rgba(220, 53, 69, 0.2)';
+    }
+  } catch (err) {
+    response.textContent = "❌ Error koneksi ke server.";
+    response.style.background = 'rgba(220, 53, 69, 0.2)';
+  }
+
+  // Reset form
+  tweetForm.reset();
+  fileName.textContent = 'Belum ada gambar dipilih';
+  previewImage.style.display = 'none';
+});
   </script>
 </body>
   </html>
