@@ -53,8 +53,9 @@ export default function handler(req, res) {
         ? { text, media: { media_ids: [media_id] } }
         : { text };
 
-      const tweet = await client_v2.post("tweets", payload);
-
+      const tweet = await client_v2.post("tweets", payload, {
+  headers: { "Content-Type": "application/json" },
+});
       return res.status(200).json({ success: true, tweet });
     } catch (error) {
       console.error("Handler/Twitter error:", error);
