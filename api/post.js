@@ -1,4 +1,3 @@
-// api/post.js
 import fs from "fs";
 import multiparty from "multiparty";
 import Twitter from "twitter-lite";
@@ -9,11 +8,6 @@ const client_v1 = new Twitter({
   access_token_key: process.env.TWITTER_ACCESS_TOKEN,
   access_token_secret: process.env.TWITTER_ACCESS_SECRET,
   version: "1.1",
-});
-
-const client_v2 = new Twitter({
-  bearer_token: process.env.TWITTER_BEARER_TOKEN,
-  version: "2",
 });
 
 export default function handler(req, res) {
@@ -47,10 +41,23 @@ export default function handler(req, res) {
         ? { text, media: { media_ids: [media_id] } }
         : { text };
 
-      // ✅ endpoint benar: "tweets" (bukan tweets.json)
-      const tweet = await client_v2.post("tweets", payload);
+      // 🚀 langsung fetch ke API v2
+      const response = await fetch("https://api.twitter.com/2/tweets", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${process.env.TWITTER_BEARER_TOKEN}`,
+        },
+        body: JSON.stringify(payload),
+      });
 
-      return res.status(200).json({ success: true, tweet });
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(JSON.stringify(data));
+      }
+
+      return res.status(200).json({ success: true, tweet: data });
     } catch (error) {
       console.error("Handler/Twitter error:", error);
       return res
