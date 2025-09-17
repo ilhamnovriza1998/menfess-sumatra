@@ -11,11 +11,6 @@ const client_v1 = new Twitter({
   version: "1.1",
 });
 
-const client_v2 = new Twitter({
-  bearer_token: process.env.TWITTER_BEARER_TOKEN,
-  version: "2",
-});
-
 export default function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
@@ -30,32 +25,34 @@ export default function handler(req, res) {
       const text = fields.text?.[0] || "";
       let media_id = null;
 
-      // ✅ upload gambar hanya kalau ada file beneran
+      // ✅ Upload gambar kalau ada
       if (files.image && files.image[0] && files.image[0].size > 0) {
         try {
           const filePath = files.image[0].path;
           const mediaData = fs.readFileSync(filePath);
-          const b64content = mediaData.toString("base64"); // ⬅️ fix disini
-
           const mediaUpload = await client_v1.post("media/upload", {
-            media_data: b64content,
+            media: mediaData,
           });
-
           media_id = mediaUpload.media_id_string;
         } catch (uploadErr) {
-          console.error("Upload error:", uploadErr?.errors || uploadErr);
-          // jangan crash, tetap lanjut tanpa gambar
+          console.error("Upload error:", uploadErr);
         }
       }
 
-      // payload untuk tweet
       const payload = media_id
         ? { text, media: { media_ids: [media_id] } }
         : { text };
 
-      const tweet = await client_v2.post("tweets", payload, {
-  headers: { "Content-Type": "application/json" },
-});
+      // ✅ Panggil API v2 dengan fetch, bukan twitter-lite
+      const tweet = await fetch("https://api.twitter.com/2/tweets", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${process.env.TWITTER_BEARER_TOKEN}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      }).then(r => r.json());
+
       return res.status(200).json({ success: true, tweet });
     } catch (error) {
       console.error("Handler/Twitter error:", error);
@@ -68,6 +65,6 @@ export default function handler(req, res) {
 
 export const config = {
   api: {
-    bodyParser: false, // wajib untuk multiparty
+    bodyParser: false,
   },
 };
