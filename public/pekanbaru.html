@@ -1,102 +1,66 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Base Pekanbaru 🚀</title>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Base Pekanbaru — Menfess</title>
   <style>
-    :root {
-      --primary: #6a11cb;
-      --secondary: #ff5e62;
-      --accent: #36d1dc;
-      --light: #ffffff;
-      --dark: #2c3e50;
-    }
-    body {
-      background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
-      font-family: 'Poppins', sans-serif;
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-    }
-    .container {
-      width: 100%;
-      max-width: 600px;
-      background: rgba(255,255,255,0.9);
-      border-radius: 20px;
-      padding: 30px;
-      text-align: center;
-    }
-    textarea {
-      width: 100%;
-      min-height: 150px;
-      padding: 15px;
-      border-radius: 15px;
-      border: 2px solid #e2e8f0;
-      font-size: 1rem;
-      resize: vertical;
-      margin-bottom: 20px;
-    }
-    button, .back-btn {
-      padding: 12px 20px;
-      background: var(--secondary);
-      color: #fff;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      margin-top: 10px;
-      display: inline-block;
-      text-decoration: none;
-    }
-    .back-btn {
-      background: var(--primary);
-    }
-    #response {
-      margin-top: 15px;
-      font-weight: bold;
-    }
+    body{font-family:Arial, Helvetica, sans-serif;background:linear-gradient(135deg,#f6d365,#fda085);min-height:100vh;display:flex;align-items:center;justify-content:center;margin:0;padding:20px}
+    .card{background:#fff;padding:24px;border-radius:12px;max-width:600px;width:100%;box-shadow:0 10px 30px rgba(0,0,0,0.08)}
+    textarea{width:100%;min-height:120px;border-radius:8px;padding:10px;border:1px solid #ddd}
+    input[type=file]{margin-top:10px}
+    button{background:#6a11cb;color:#fff;border:none;padding:10px 16px;border-radius:8px;cursor:pointer;margin-top:12px}
+    a{display:inline-block;margin-top:12px}
+    #response{margin-top:12px;font-weight:600}
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1><i class="fas fa-rocket"></i> Menfess Pekanbaru</h1>
-    <form id="tweetForm" enctype="multipart/form-data">
-      <textarea name="text" placeholder="Tulis pesan menarikmu..." required></textarea>
-      <input type="file" name="image" accept="image/*"><br><br>
+  <div class="card">
+    <h2>Menfess Pekanbaru</h2>
+
+    <form id="form" enctype="multipart/form-data">
+      <textarea name="text" placeholder="Tulis pesan..." required></textarea>
+      <input type="file" name="image" accept="image/*">
+      <br>
       <button type="submit">Kirim Menfess</button>
     </form>
-    <p id="response"></p>
-    <a href="index.html" class="back-btn">⬅ Kembali</a>
+
+    <div id="response"></div>
+    <a href="/index.html">⬅ Kembali ke Index</a>
   </div>
 
   <script>
-    const form = document.getElementById('tweetForm');
-    const responseEl = document.getElementById('response');
+    const form = document.getElementById('form');
+    const resp = document.getElementById('response');
 
-    form.addEventListener('submit', async (e) => {
+    form.addEventListener('submit', async e => {
       e.preventDefault();
-      responseEl.textContent = 'Mengirim...';
+      resp.textContent = 'Mengirim...';
 
-      const formData = new FormData(form);
-
+      const fd = new FormData(form);
       try {
-        const res = await fetch('/api/post', {
-          method: 'POST',
-          body: formData
-        });
-        const data = await res.json();
-        if (data.success) {
-          responseEl.textContent = '✅ Menfess berhasil terkirim!';
-          form.reset();
-        } else {
-          responseEl.textContent = '⚠️ Gagal: ' + (data.error || 'Unknown error');
+        const res = await fetch('/api/post', { method: 'POST', body: fd });
+        const text = await res.text(); // ambil text dulu
+        try {
+          const data = JSON.parse(text); // coba parse JSON
+          if (res.ok && data.success) {
+            resp.style.color = 'green';
+            resp.textContent = '✅ Terkirim!';
+            form.reset();
+          } else {
+            resp.style.color = 'red';
+            resp.textContent = 'Gagal: ' + (data.error || JSON.stringify(data));
+          }
+        } catch (err) {
+          // server tidak mengembalikan JSON (mungkin HTML error)
+          resp.style.color = 'red';
+          resp.textContent = 'Server returned non-JSON response: ' + text.slice(0,200);
+          console.error('Non-JSON response:', text);
         }
       } catch (err) {
-        responseEl.textContent = '⚠️ Error koneksi!';
+        resp.style.color = 'red';
+        resp.textContent = 'Error koneksi: ' + err.message;
+        console.error(err);
       }
     });
   </script>
