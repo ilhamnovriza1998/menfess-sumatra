@@ -1,7 +1,6 @@
 import Twitter from "twitter-lite";
 import multiparty from "multiparty";
 
-// Client v1.1 (buat upload media)
 const clientV1 = new Twitter({
   consumer_key: process.env.TWITTER_CONSUMER_KEY,
   consumer_secret: process.env.TWITTER_CONSUMER_SECRET,
@@ -10,7 +9,6 @@ const clientV1 = new Twitter({
   version: "1.1"
 });
 
-// Client v2 (buat posting tweet)
 const clientV2 = new Twitter({
   bearer_token: process.env.TWITTER_BEARER_TOKEN,
   version: "2"
@@ -35,24 +33,23 @@ export default async function handler(req, res) {
       const text = fields.text ? fields.text[0] : "";
       let mediaId = null;
 
-      // Jika ada file gambar → upload ke v1.1
-      if (files.image && files.image[0].path) {
+      // ✅ Hanya upload gambar kalau ada
+      if (files.image && files.image[0] && files.image[0].path) {
         const fs = await import("fs");
         const data = fs.readFileSync(files.image[0].path);
 
         const media = await clientV1.post("media/upload", {
-          media: data,
+          media_data: data.toString("base64"),
         });
+
         mediaId = media.media_id_string;
       }
 
-      // Buat body request ke v2
       let body = { text };
       if (mediaId) {
         body.media = { media_ids: [mediaId] };
       }
 
-      // Kirim tweet ke API v2
       const tweetRes = await clientV2.post("tweets", body);
 
       return res.status(200).json({
