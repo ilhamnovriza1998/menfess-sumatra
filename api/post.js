@@ -30,21 +30,25 @@ export default function handler(req, res) {
       const text = fields.text?.[0] || "";
       let media_id = null;
 
-      // ✅ hanya upload kalau ada file beneran
+      // ✅ upload gambar hanya kalau ada file beneran
       if (files.image && files.image[0] && files.image[0].size > 0) {
         try {
           const filePath = files.image[0].path;
           const mediaData = fs.readFileSync(filePath);
+          const b64content = mediaData.toString("base64"); // ⬅️ fix disini
+
           const mediaUpload = await client_v1.post("media/upload", {
-            media: mediaData,
+            media_data: b64content,
           });
+
           media_id = mediaUpload.media_id_string;
         } catch (uploadErr) {
-          console.error("Upload error:", uploadErr);
+          console.error("Upload error:", uploadErr?.errors || uploadErr);
           // jangan crash, tetap lanjut tanpa gambar
         }
       }
 
+      // payload untuk tweet
       const payload = media_id
         ? { text, media: { media_ids: [media_id] } }
         : { text };
