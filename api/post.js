@@ -3,7 +3,7 @@ import fs from "fs";
 import multiparty from "multiparty";
 import Twitter from "twitter-lite";
 
-const client_v1 = new Twitter({
+const client = new Twitter({
   consumer_key: process.env.TWITTER_CONSUMER_KEY,
   consumer_secret: process.env.TWITTER_CONSUMER_SECRET,
   access_token_key: process.env.TWITTER_ACCESS_TOKEN,
@@ -25,12 +25,12 @@ export default function handler(req, res) {
       const text = fields.text?.[0] || "";
       let media_id = null;
 
-      // ✅ Upload gambar kalau ada
+      // ✅ upload gambar hanya kalau ada file
       if (files.image && files.image[0] && files.image[0].size > 0) {
         try {
           const filePath = files.image[0].path;
           const mediaData = fs.readFileSync(filePath);
-          const mediaUpload = await client_v1.post("media/upload", {
+          const mediaUpload = await client.post("media/upload", {
             media: mediaData,
           });
           media_id = mediaUpload.media_id_string;
@@ -39,19 +39,13 @@ export default function handler(req, res) {
         }
       }
 
+      // ✅ bikin payload tweet
       const payload = media_id
-        ? { text, media: { media_ids: [media_id] } }
-        : { text };
+        ? { status: text, media_ids: media_id }
+        : { status: text };
 
-      // ✅ Panggil API v2 dengan fetch, bukan twitter-lite
-      const tweet = await fetch("https://api.twitter.com/2/tweets", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${process.env.TWITTER_BEARER_TOKEN}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      }).then(r => r.json());
+      // ✅ kirim tweet (langsung via v1.1)
+      const tweet = await client.post("statuses/update", payload);
 
       return res.status(200).json({ success: true, tweet });
     } catch (error) {
@@ -65,6 +59,6 @@ export default function handler(req, res) {
 
 export const config = {
   api: {
-    bodyParser: false,
+    bodyParser: false, // wajib untuk multiparty
   },
 };
