@@ -13,18 +13,7 @@ export default async function handler(req, res) {
     if (err) return res.status(500).json({ error: err.message });
 
     try {
-      console.log("FIELDS:", fields);
-      console.log("FILES:", files);
-
-      const file = files.file?.[0];
-      if (!file) {
-        console.error("No file uploaded");
-        return res.status(400).json({ error: "No file uploaded" });
-      }
-
-      // convert file ke base64
-      const mediaData = fs.readFileSync(file.path, { encoding: "base64" });
-      console.log("MediaData length:", mediaData.length);
+      const status = fields.text?.[0] || "Tanpa teks";
 
       const client = new Twitter({
         subdomain: "api",
@@ -35,19 +24,24 @@ export default async function handler(req, res) {
         access_token_secret: process.env.TWITTER_ACCESS_SECRET,
       });
 
-      // Upload media
-      const media = await client.post("media/upload", {
-        media_data: mediaData,
-      });
+      let mediaId = null;
 
-      console.log("UPLOAD RESPONSE:", media);
+      // kalau ada file, upload dulu
+      const file = files.file?.[0];
+      if (file) {
+        const mediaData = fs.readFileSync(file.path, { encoding: "base64" });
+        const media = await client.post("media/upload", {
+          media_data: mediaData,
+        });
+        mediaId = media.media_id_string;
+      }
 
-      // Post tweet
-      const status = fields.text?.[0] || "Tanpa teks";
-      const tweet = await client.post("statuses/update", {
-        status,
-        media_ids: media.media_id_string,
-      });
+      // post tweet
+      const tweetPayload = mediaId
+        ? { status, media_ids: mediaId }
+        : { status };
+
+      const tweet = await client.post("statuses/update", tweetPayload);
 
       res.status(200).json(tweet);
     } catch (error) {
