@@ -1,3 +1,4 @@
+// api/post.js
 import fs from "fs";
 import multiparty from "multiparty";
 import Twitter from "twitter-lite";
@@ -8,6 +9,15 @@ const client_v1 = new Twitter({
   access_token_key: process.env.TWITTER_ACCESS_TOKEN,
   access_token_secret: process.env.TWITTER_ACCESS_SECRET,
   version: "1.1",
+});
+
+// 🔑 pakai OAuth 1.0a user context untuk v2
+const client_v2 = new Twitter({
+  consumer_key: process.env.TWITTER_CONSUMER_KEY,
+  consumer_secret: process.env.TWITTER_CONSUMER_SECRET,
+  access_token_key: process.env.TWITTER_ACCESS_TOKEN,
+  access_token_secret: process.env.TWITTER_ACCESS_SECRET,
+  version: "2",
 });
 
 export default function handler(req, res) {
@@ -41,23 +51,10 @@ export default function handler(req, res) {
         ? { text, media: { media_ids: [media_id] } }
         : { text };
 
-      // 🚀 langsung fetch ke API v2
-      const response = await fetch("https://api.twitter.com/2/tweets", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${process.env.TWITTER_BEARER_TOKEN}`,
-        },
-        body: JSON.stringify(payload),
-      });
+      // 🚀 Sekarang pakai OAuth 1.0a, bukan bearer
+      const tweet = await client_v2.post("tweets", payload);
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(JSON.stringify(data));
-      }
-
-      return res.status(200).json({ success: true, tweet: data });
+      return res.status(200).json({ success: true, tweet });
     } catch (error) {
       console.error("Handler/Twitter error:", error);
       return res
