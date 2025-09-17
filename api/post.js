@@ -30,7 +30,6 @@ export default function handler(req, res) {
       const text = fields.text?.[0] || "";
       let media_id = null;
 
-      // ✅ Upload file hanya jika ada
       if (files.image && files.image[0] && files.image[0].size > 0) {
         try {
           const filePath = files.image[0].path;
@@ -44,11 +43,11 @@ export default function handler(req, res) {
         }
       }
 
-      // ✅ Payload untuk API v2
       const payload = media_id
         ? { text, media: { media_ids: [media_id] } }
         : { text };
 
+      // ✅ endpoint benar: "tweets" (bukan tweets.json)
       const tweet = await client_v2.post("tweets", payload);
 
       return res.status(200).json({ success: true, tweet });
