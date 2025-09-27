@@ -2,65 +2,108 @@
 <html lang="id">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Base Pekanbaru — Menfess</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Kirim Menfess - Base Pekanbaru</title>
+  <meta name="description" content="Kirim menfess teks atau foto untuk Base Pekanbaru. Anonim, cepat, dan langsung diposting ke Twitter!" />
+  <meta name="theme-color" content="#8a2be2" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+  <!-- Tailwind via CDN for fast iteration -->
+  <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    body{font-family:Arial, Helvetica, sans-serif;background:linear-gradient(135deg,#f6d365,#fda085);min-height:100vh;display:flex;align-items:center;justify-content:center;margin:0;padding:20px}
-    .card{background:#fff;padding:24px;border-radius:12px;max-width:600px;width:100%;box-shadow:0 10px 30px rgba(0,0,0,0.08)}
-    textarea{width:100%;min-height:120px;border-radius:8px;padding:10px;border:1px solid #ddd}
-    input[type=file]{margin-top:10px}
-    button{background:#6a11cb;color:#fff;border:none;padding:10px 16px;border-radius:8px;cursor:pointer;margin-top:12px}
-    a{display:inline-block;margin-top:12px}
-    #response{margin-top:12px;font-weight:600}
+    body { background: #07070c; }
+    .glass { backdrop-filter: blur(12px) saturate(120%); background: rgba(17, 24, 39, .55); border: 1px solid rgba(255,255,255,.08); }
+    .btn-neon { box-shadow: 0 0 15px rgba(255,62,165,.65), 0 0 40px rgba(63,243,255,.35); }
   </style>
 </head>
-<body>
-  <div class="card">
-    <h2>Menfess Pekanbaru</h2>
+<body class="text-white font-display selection:bg-neonpink/30">
 
-    <form id="form" enctype="multipart/form-data">
-      <textarea name="text" placeholder="Tulis pesan..." required></textarea>
-      <input type="file" name="image" accept="image/*">
-      <br>
-      <button type="submit">Kirim Menfess</button>
-    </form>
+  <header class="sticky top-0 z-40 backdrop-blur border-b border-white/10 bg-black/30">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+      <a href="#" class="flex items-center gap-3 group">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" class="drop-shadow" aria-hidden="true">
+          <path d="M12 2l3.09 6.26L22 9.27l-5 4.88L18.18 22 12 18.77 5.82 22 7 14.15l-5-4.88 6.91-1.01L12 2z" stroke="#ff3ea5" stroke-width="1.2" fill="url(#g)"/>
+          <defs>
+            <linearGradient id="g" x1="0" y1="0" x2="24" y2="24" gradientUnits="userSpaceOnUse">
+              <stop stop-color="#ff3ea5"/>
+              <stop offset="1" stop-color="#3ff3ff"/>
+            </linearGradient>
+          </defs>
+        </svg>
+        <span class="text-lg font-extrabold tracking-wide">
+          Menfess <span class="text-neonpink">Sumatra</span>
+        </span>
+      </a>
+      <div class="flex items-center gap-3">
+        <a href="#" class="shine btn-neon inline-flex items-center gap-2 rounded-full bg-neonpink px-4 py-2 text-sm font-semibold hover:scale-[1.02] active:scale-95 transition" aria-label="Kirim Menfess">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 12l18-9-9 18-2-7-7-2z" fill="currentColor"/></svg>
+          Kembali ke Base Pekanbaru
+        </a>
+      </div>
+    </div>
+  </header>
 
-    <div id="response"></div>
-    <a href="/index.html">⬅ Kembali ke Index</a>
-  </div>
+  <section id="form" class="py-12">
+    <div class="max-w-6xl mx-auto px-4">
+      <h2 class="text-3xl font-extrabold">Kirim Menfess untuk <span class="text-neonpink">Base Pekanbaru</span></h2>
+      <p class="mt-2 text-white/80">Kirim menfess teks atau foto secara anonim. Pastikan mengikuti rules dan ketentuan sebelum mengirim.</p>
+      <form action="#" method="POST" class="mt-6 grid gap-6">
+        
+        <!-- Input Teks / Foto -->
+        <div>
+          <label for="type" class="text-white/90">Pilih Tipe Menfess</label>
+          <select id="type" name="type" class="p-3 bg-white/5 border border-white/20 rounded-lg focus:outline-none w-full">
+            <option value="text">Teks</option>
+            <option value="photo">Foto + Caption</option>
+          </select>
+        </div>
+
+        <!-- Teks Menfess -->
+        <div id="textInput" class="flex flex-col gap-4">
+          <label for="message" class="text-white/90">Tulis Menfess</label>
+          <textarea id="message" name="message" rows="4" class="p-3 bg-white/5 border border-white/20 rounded-lg focus:outline-none" placeholder="Tulis menfess Anda..." required></textarea>
+        </div>
+
+        <!-- Foto Menfess -->
+        <div id="photoInput" class="hidden flex flex-col gap-4">
+          <label for="photo" class="text-white/90">Pilih Foto</label>
+          <input type="file" id="photo" name="photo" class="p-3 bg-white/5 border border-white/20 rounded-lg focus:outline-none" accept="image/*">
+          <label for="caption" class="text-white/90">Caption Foto</label>
+          <textarea id="caption" name="caption" rows="2" class="p-3 bg-white/5 border border-white/20 rounded-lg focus:outline-none" placeholder="Tuliskan caption untuk foto..." required></textarea>
+        </div>
+
+        <!-- Button Kirim -->
+        <button type="submit" class="btn-neon rounded-full px-5 py-2.5 bg-neonpink font-semibold hover:scale-[1.02] active:scale-95 transition">Kirim Menfess</button>
+      </form>
+    </div>
+  </section>
+
+  <footer class="mt-10 border-t border-white/10">
+    <div class="max-w-6xl mx-auto px-4 py-8 text-sm text-white/70 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <p>© <span id="year"></span> Menfess Sumatra. All rights reserved.</p>
+      <div class="flex items-center gap-3">
+        <a class="hover:text-neonpink" href="#">Kebijakan Privasi</a>
+      </div>
+    </div>
+  </footer>
 
   <script>
-    const form = document.getElementById('form');
-    const resp = document.getElementById('response');
+    // year
+    document.getElementById('year').textContent = new Date().getFullYear();
 
-    form.addEventListener('submit', async e => {
-      e.preventDefault();
-      resp.textContent = 'Mengirim...';
+    // toggle between text and photo input
+    const typeSelect = document.getElementById("type");
+    const textInput = document.getElementById("textInput");
+    const photoInput = document.getElementById("photoInput");
 
-      const fd = new FormData(form);
-      try {
-        const res = await fetch('/api/post', { method: 'POST', body: fd });
-        const text = await res.text(); // ambil text dulu
-        try {
-          const data = JSON.parse(text); // coba parse JSON
-          if (res.ok && data.success) {
-            resp.style.color = 'green';
-            resp.textContent = '✅ Terkirim!';
-            form.reset();
-          } else {
-            resp.style.color = 'red';
-            resp.textContent = 'Gagal: ' + (data.error || JSON.stringify(data));
-          }
-        } catch (err) {
-          // server tidak mengembalikan JSON (mungkin HTML error)
-          resp.style.color = 'red';
-          resp.textContent = 'Server returned non-JSON response: ' + text.slice(0,200);
-          console.error('Non-JSON response:', text);
-        }
-      } catch (err) {
-        resp.style.color = 'red';
-        resp.textContent = 'Error koneksi: ' + err.message;
-        console.error(err);
+    typeSelect.addEventListener("change", function () {
+      if (this.value === "photo") {
+        textInput.classList.add("hidden");
+        photoInput.classList.remove("hidden");
+      } else {
+        textInput.classList.remove("hidden");
+        photoInput.classList.add("hidden");
       }
     });
   </script>
