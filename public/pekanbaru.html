@@ -106,6 +106,31 @@
         photoInput.classList.add("hidden");
       }
     });
+    
+    // api Twitter
+    document.getElementById("menfessForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const formData = new FormData();
+  formData.append("text", document.getElementById("menfessText").value);
+
+  const imageFile = document.getElementById("menfessImage").files[0];
+  if (imageFile) {
+    formData.append("image", imageFile);
+  }
+
+  const res = await fetch("/api/postToTwitter", {
+    method: "POST",
+    body: formData,
+  });
+
+  const data = await res.json();
+  if (data.success) {
+    alert("✅ Menfess berhasil dikirim ke akun X!");
+  } else {
+    alert("❌ Gagal mengirim menfess: " + data.error);
+  }
+});
   </script>
 </body>
 </html>
