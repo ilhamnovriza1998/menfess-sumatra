@@ -1,10 +1,10 @@
+import Twitter from "twitter-lite";
 import { formidable } from "formidable";
 import fs from "fs";
-import fetch from "node-fetch";
 
 export const config = {
   api: {
-    bodyParser: false, // wajib untuk handle FormData
+    bodyParser: false,
   },
 };
 
@@ -15,7 +15,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
-  const form = formidable({ multiples: false }); // ✅ versi baru
+  const form = formidable({ multiples: false });
 
   form.parse(req, async (err, fields, files) => {
     if (err) {
@@ -28,68 +28,40 @@ export default async function handler(req, res) {
 
     console.log("📩 Data diterima:", { text, hasFile: !!file });
 
-    if (!text && !file) {
-      return res.status(400).json({ error: "Missing text or image" });
-    }
-
-    const bearerToken = process.env.TWITTER_BEARER_TOKEN;
-    if (!bearerToken) {
-      console.error("❌ Missing TWITTER_BEARER_TOKEN");
-      return res.status(500).json({ error: "Missing Twitter credentials" });
-    }
-
-    let mediaId = null;
+    // Cek kredensial
+    const client = new Twitter({
+      consumer_key: process.env.TWITTER_API_KEY,
+      consumer_secret: process.env.TWITTER_API_KEY_SECRET,
+      access_token_key: process.env.TWITTER_ACCESS_TOKEN,
+      access_token_secret: process.env.TWITTER_ACCESS_TOKEN_SECRET,
+    });
 
     try {
-      // 🖼️ Upload gambar jika ada
+      let mediaId = null;
+
+      // Upload gambar dulu jika ada
       if (file && file.filepath) {
-        console.log("📤 Upload gambar...");
+        console.log("📤 Upload gambar ke X...");
         const imageData = fs.readFileSync(file.filepath);
-        const base64 = imageData.toString("base64");
-
-        const upload = await fetch("https://upload.twitter.com/1.1/media/upload.json", {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${bearerToken}`,
-            "Content-Type": "application/x-www-form-urlencoded",
-          },
-          body: new URLSearchParams({ media_data: base64 }),
+        const media = await client.post("media/upload", {
+          media_data: imageData.toString("base64"),
         });
-
-        const uploadResult = await upload.json();
-        console.log("📦 Hasil upload:", uploadResult);
-
-        if (uploadResult.media_id_string) {
-          mediaId = uploadResult.media_id_string;
-        } else {
-          throw new Error("Upload gambar gagal: " + JSON.stringify(uploadResult));
-        }
+        mediaId = media.media_id_string;
+        console.log("✅ Upload sukses:", mediaId);
       }
 
-      // 📝 Kirim tweet
-      const body = mediaId
-        ? { text, media: { media_ids: [mediaId] } }
-        : { text };
+      // Kirim tweet
+      const params = mediaId
+        ? { status: text, media_ids: mediaId }
+        : { status: text };
 
-      console.log("🚀 Kirim tweet:", body);
+      console.log("🚀 Posting tweet:", params);
 
-      const tweetRes = await fetch("https://api.twitter.com/2/tweets", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${bearerToken}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(body),
-      });
+      const tweet = await client.post("statuses/update", params);
 
-      const result = await tweetRes.json();
-      console.log("📬 Respon Twitter:", result);
+      console.log("📬 Respon sukses:", tweet);
 
-      if (result.data) {
-        return res.status(200).json({ success: true, tweet: result.data });
-      } else {
-        throw new Error(JSON.stringify(result));
-      }
+      return res.status(200).json({ success: true, tweet });
     } catch (error) {
       console.error("🔥 ERROR:", error);
       return res.status(500).json({ error: error.message });
