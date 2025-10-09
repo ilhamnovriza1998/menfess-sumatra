@@ -9,16 +9,17 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
-  <!-- Tailwind via CDN for fast iteration -->
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    body { background: #07070c; }
+    body { background: #07070c; font-family: 'Outfit', sans-serif; }
     .glass { backdrop-filter: blur(12px) saturate(120%); background: rgba(17, 24, 39, .55); border: 1px solid rgba(255,255,255,.08); }
     .btn-neon { box-shadow: 0 0 15px rgba(255,62,165,.65), 0 0 40px rgba(63,243,255,.35); }
   </style>
 </head>
-<body class="text-white font-display selection:bg-neonpink/30">
 
+<body class="text-white selection:bg-pink-500/30">
+
+  <!-- Header -->
   <header class="sticky top-0 z-40 backdrop-blur border-b border-white/10 bg-black/30">
     <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
       <a href="#" class="flex items-center gap-3 group">
@@ -32,11 +33,11 @@
           </defs>
         </svg>
         <span class="text-lg font-extrabold tracking-wide">
-          Menfess <span class="text-neonpink">Sumatra</span>
+          Menfess <span class="text-pink-400">Sumatra</span>
         </span>
       </a>
       <div class="flex items-center gap-3">
-        <a href="index.html" class="shine btn-neon inline-flex items-center gap-2 rounded-full bg-neonpink px-4 py-2 text-sm font-semibold hover:scale-[1.02] active:scale-95 transition" aria-label="Kirim Menfess">
+        <a href="index.html" class="shine btn-neon inline-flex items-center gap-2 rounded-full bg-pink-500 px-4 py-2 text-sm font-semibold hover:scale-[1.02] active:scale-95 transition">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 12l18-9-9 18-2-7-7-2z" fill="currentColor"/></svg>
           Kembali ke Base Sumatra
         </a>
@@ -44,13 +45,15 @@
     </div>
   </header>
 
+  <!-- Form -->
   <section id="form" class="py-12">
     <div class="max-w-6xl mx-auto px-4">
-      <h2 class="text-3xl font-extrabold">Kirim Menfess untuk <span class="text-neonpink">Base Pekanbaru</span></h2>
+      <h2 class="text-3xl font-extrabold">Kirim Menfess untuk <span class="text-pink-400">Base Pekanbaru</span></h2>
       <p class="mt-2 text-white/80">Kirim menfess teks atau foto secara anonim. Pastikan mengikuti rules dan ketentuan sebelum mengirim.</p>
-      <form action="#" method="POST" class="mt-6 grid gap-6">
+      
+      <form id="menfessForm" class="mt-6 grid gap-6" enctype="multipart/form-data">
         
-        <!-- Input Teks / Foto -->
+        <!-- Pilihan tipe -->
         <div>
           <label for="type" class="text-white/90">Pilih Tipe Menfess</label>
           <select id="type" name="type" class="p-3 bg-white/5 border border-white/20 rounded-lg focus:outline-none w-full">
@@ -59,40 +62,42 @@
           </select>
         </div>
 
-        <!-- Teks Menfess -->
+        <!-- Input teks -->
         <div id="textInput" class="flex flex-col gap-4">
-          <label for="message" class="text-white/90">Tulis Menfess</label>
-          <textarea id="message" name="message" rows="4" class="p-3 bg-white/5 border border-white/20 rounded-lg focus:outline-none" placeholder="Tulis menfess Anda..." required></textarea>
+          <label for="menfessText" class="text-white/90">Tulis Menfess</label>
+          <textarea id="menfessText" name="text" rows="4" class="p-3 bg-white/5 border border-white/20 rounded-lg focus:outline-none" placeholder="Tulis menfess Anda..." required></textarea>
         </div>
 
-        <!-- Foto Menfess -->
+        <!-- Input foto -->
         <div id="photoInput" class="hidden flex flex-col gap-4">
-          <label for="photo" class="text-white/90">Pilih Foto</label>
-          <input type="file" id="photo" name="photo" class="p-3 bg-white/5 border border-white/20 rounded-lg focus:outline-none" accept="image/*">
-          <label for="caption" class="text-white/90">Caption Foto</label>
-          <textarea id="caption" name="caption" rows="2" class="p-3 bg-white/5 border border-white/20 rounded-lg focus:outline-none" placeholder="Tuliskan caption untuk foto..." required></textarea>
+          <label for="menfessImage" class="text-white/90">Pilih Foto</label>
+          <input type="file" id="menfessImage" name="image" class="p-3 bg-white/5 border border-white/20 rounded-lg focus:outline-none" accept="image/*">
+          <label for="menfessCaption" class="text-white/90">Caption Foto</label>
+          <textarea id="menfessCaption" name="caption" rows="2" class="p-3 bg-white/5 border border-white/20 rounded-lg focus:outline-none" placeholder="Tuliskan caption untuk foto..."></textarea>
         </div>
 
-        <!-- Button Kirim -->
-        <button type="submit" class="btn-neon rounded-full px-5 py-2.5 bg-neonpink font-semibold hover:scale-[1.02] active:scale-95 transition">Kirim Menfess</button>
+        <!-- Tombol kirim -->
+        <button type="submit" class="btn-neon rounded-full px-5 py-2.5 bg-pink-500 font-semibold hover:scale-[1.02] active:scale-95 transition">
+          Kirim Menfess
+        </button>
+        <p id="status" class="text-sm text-white/70"></p>
       </form>
     </div>
   </section>
 
+  <!-- Footer -->
   <footer class="mt-10 border-t border-white/10">
     <div class="max-w-6xl mx-auto px-4 py-8 text-sm text-white/70 flex flex-col sm:flex-row items-center justify-between gap-4">
       <p>© <span id="year"></span> Menfess Sumatra. All rights reserved.</p>
-      <div class="flex items-center gap-3">
-        <a class="hover:text-neonpink" href="#">Kebijakan Privasi</a>
-      </div>
+      <a class="hover:text-pink-400" href="#">Kebijakan Privasi</a>
     </div>
   </footer>
 
   <script>
-    // year
+    // Tahun otomatis
     document.getElementById('year').textContent = new Date().getFullYear();
 
-    // toggle between text and photo input
+    // Ganti tampilan input teks/foto
     const typeSelect = document.getElementById("type");
     const textInput = document.getElementById("textInput");
     const photoInput = document.getElementById("photoInput");
@@ -106,31 +111,42 @@
         photoInput.classList.add("hidden");
       }
     });
-    
-    // api Twitter
+
+    // Proses kirim ke API
     document.getElementById("menfessForm").addEventListener("submit", async (e) => {
-  e.preventDefault();
+      e.preventDefault();
+      const status = document.getElementById("status");
+      status.textContent = "Mengirim...";
 
-  const formData = new FormData();
-  formData.append("text", document.getElementById("menfessText").value);
+      const formData = new FormData();
 
-  const imageFile = document.getElementById("menfessImage").files[0];
-  if (imageFile) {
-    formData.append("image", imageFile);
-  }
+      const type = document.getElementById("type").value;
+      if (type === "photo") {
+        formData.append("text", document.getElementById("menfessCaption").value);
+        const imageFile = document.getElementById("menfessImage").files[0];
+        if (imageFile) formData.append("image", imageFile);
+      } else {
+        formData.append("text", document.getElementById("menfessText").value);
+      }
 
-  const res = await fetch("/api/postToTwitter", {
-    method: "POST",
-    body: formData,
-  });
+      try {
+        const res = await fetch("/api/postToTwitter", {
+          method: "POST",
+          body: formData,
+        });
 
-  const data = await res.json();
-  if (data.success) {
-    alert("✅ Menfess berhasil dikirim ke akun X!");
-  } else {
-    alert("❌ Gagal mengirim menfess: " + data.error);
-  }
-});
+        const data = await res.json();
+        if (data.success) {
+          status.textContent = "✅ Menfess berhasil dikirim ke akun X!";
+          e.target.reset();
+        } else {
+          status.textContent = "❌ Gagal mengirim: " + (data.error || "Terjadi kesalahan");
+        }
+      } catch (err) {
+        console.error(err);
+        status.textContent = "⚠️ Gagal terhubung ke server.";
+      }
+    });
   </script>
 </body>
 </html>
