@@ -1,10 +1,10 @@
-import formidable from "formidable";
+import { formidable } from "formidable";
 import fs from "fs";
 import fetch from "node-fetch";
 
 export const config = {
   api: {
-    bodyParser: false, // penting! supaya formidable bisa jalan
+    bodyParser: false, // wajib untuk handle FormData
   },
 };
 
@@ -15,7 +15,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
-  const form = new formidable.IncomingForm();
+  const form = formidable({ multiples: false }); // ✅ versi baru
 
   form.parse(req, async (err, fields, files) => {
     if (err) {
@@ -41,7 +41,7 @@ export default async function handler(req, res) {
     let mediaId = null;
 
     try {
-      // upload foto jika ada
+      // 🖼️ Upload gambar jika ada
       if (file && file.filepath) {
         console.log("📤 Upload gambar...");
         const imageData = fs.readFileSync(file.filepath);
@@ -66,7 +66,7 @@ export default async function handler(req, res) {
         }
       }
 
-      // kirim tweet
+      // 📝 Kirim tweet
       const body = mediaId
         ? { text, media: { media_ids: [mediaId] } }
         : { text };
