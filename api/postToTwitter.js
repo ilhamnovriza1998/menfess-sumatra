@@ -2,9 +2,10 @@ import Twitter from "twitter-lite";
 import formidable from "formidable";
 import fs from "fs";
 
+// Matikan bodyParser bawaan biar formidable bisa handle multipart/form-data
 export const config = {
   api: {
-    bodyParser: false, // kita pakai formidable buat handle upload
+    bodyParser: false,
   },
 };
 
@@ -13,34 +14,38 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
-  const form = new formidable.IncomingForm();
+  try {
+    const form = formidable({ multiples: false });
+    form.parse(req, async (err, fields, files) => {
+      if (err) {
+        console.error("Form parse error:", err);
+        return res.status(400).json({ error: "Error parsing form data" });
+      }
 
-  form.parse(req, async (err, fields, files) => {
-    if (err) {
-      console.error(err);
-      return res.status(400).json({ error: "Error parsing form data" });
-    }
+      const text = fields.text || "";
+      const file = files.image;
 
-    const text = fields.text?.[0] || fields.text || "";
-    const file = files.image?.[0] || files.image;
+      // Pastikan semua key env terbaca
+      const client = new Twitter({
+        consumer_key: process.env.TWITTER_API_KEY,
+        consumer_secret: process.env.TWITTER_API_KEY_SECRET,
+        access_token_key: process.env.TWITTER_ACCESS_TOKEN,
+        access_token_secret: process.env.TWITTER_ACCESS_TOKEN_SECRET,
+      });
 
-    const client = new Twitter({
-      consumer_key: process.env.TWITTER_API_KEY,
-      consumer_secret: process.env.TWITTER_API_KEY_SECRET,
-      access_token_key: process.env.TWITTER_ACCESS_TOKEN,
-      access_token_secret: process.env.TWITTER_ACCESS_TOKEN_SECRET,
-    });
-
-    try {
       let mediaId = null;
 
-      // Kalau ada gambar, upload dulu
+      // Kalau ada file, upload ke Twitter
       if (file && file.filepath) {
-        const imageData = fs.readFileSync(file.filepath);
-        const media = await client.post("media/upload", {
-          media: imageData.toString("base64"),
-        });
-        mediaId = media.media_id_string;
+        try {
+          const imageData = fs.readFileSync(file.filepath);
+          const media = await client.post("media/upload", {
+            media_data: imageData.toString("base64"),
+          });
+          mediaId = media.media_id_string;
+        } catch (uploadError) {
+          console.error("Media upload error:", uploadError);
+        }
       }
 
       // Posting tweet
@@ -49,11 +54,12 @@ export default async function handler(req, res) {
         : { status: text };
 
       const tweet = await client.post("statuses/update", params);
+      console.log("Tweet success:", tweet.id_str);
 
       res.status(200).json({ success: true, tweet });
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: error.message });
-    }
-  });
+    });
+  } catch (error) {
+    console.error("Handler error:", error);
+    res.status(500).json({ error: error.message });
+  }
 }
