@@ -1,65 +1,94 @@
-import Twitter from "twitter-lite";
-import formidable from "formidable";
-import fs from "fs";
-
-// Matikan bodyParser bawaan biar formidable bisa handle multipart/form-data
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
+import fetch from "node-fetch";
 
 export default async function handler(req, res) {
+  console.log("🔹 API postToTwitter dipanggil dengan method:", req.method);
+
   if (req.method !== "POST") {
+    console.log("❌ Method tidak diizinkan:", req.method);
     return res.status(405).json({ error: "Method not allowed" });
   }
 
   try {
-    const form = formidable({ multiples: false });
-    form.parse(req, async (err, fields, files) => {
-      if (err) {
-        console.error("Form parse error:", err);
-        return res.status(400).json({ error: "Error parsing form data" });
-      }
+    const { text, image } = req.body || {};
+    console.log("📩 Data diterima dari frontend:", { textLength: text?.length, hasImage: !!image });
 
-      const text = fields.text || "";
-      const file = files.image;
+    if (!text && !image) {
+      console.log("❌ Tidak ada teks atau gambar di body request");
+      return res.status(400).json({ error: "Missing text or image" });
+    }
 
-      // Pastikan semua key env terbaca
-      const client = new Twitter({
-        consumer_key: process.env.TWITTER_API_KEY,
-        consumer_secret: process.env.TWITTER_API_KEY_SECRET,
-        access_token_key: process.env.TWITTER_ACCESS_TOKEN,
-        access_token_secret: process.env.TWITTER_ACCESS_TOKEN_SECRET,
-      });
+    const bearerToken = process.env.TWITTER_BEARER_TOKEN;
+    const accessToken = process.env.TWITTER_ACCESS_TOKEN;
+    const accessSecret = process.env.TWITTER_ACCESS_SECRET;
 
-      let mediaId = null;
+    if (!bearerToken || !accessToken || !accessSecret) {
+      console.log("❌ Kredensial Twitter tidak lengkap di Environment Variable");
+      return res.status(500).json({ error: "Missing Twitter credentials" });
+    }
 
-      // Kalau ada file, upload ke Twitter
-      if (file && file.filepath) {
-        try {
-          const imageData = fs.readFileSync(file.filepath);
-          const media = await client.post("media/upload", {
-            media_data: imageData.toString("base64"),
-          });
-          mediaId = media.media_id_string;
-        } catch (uploadError) {
-          console.error("Media upload error:", uploadError);
+    let mediaId = null;
+
+    // 🖼 Upload gambar jika ada
+    if (image) {
+      console.log("📤 Mulai upload gambar ke Twitter...");
+      try {
+        const upload = await fetch("https://upload.twitter.com/1.1/media/upload.json", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${bearerToken}`,
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+          body: new URLSearchParams({
+            media_data: image.split(",")[1],
+          }),
+        });
+
+        const uploadResult = await upload.json();
+        console.log("📦 Respon upload Twitter:", uploadResult);
+
+        if (uploadResult.media_id_string) {
+          mediaId = uploadResult.media_id_string;
+          console.log("✅ Gambar berhasil diupload. media_id:", mediaId);
+        } else {
+          console.log("❌ Upload gagal:", uploadResult);
+          return res.status(500).json({ error: "Gagal upload gambar ke Twitter", detail: uploadResult });
         }
+      } catch (uploadError) {
+        console.error("🔥 ERROR saat upload gambar:", uploadError);
+        return res.status(500).json({ error: "Gagal upload gambar", message: uploadError.message });
       }
+    }
 
-      // Posting tweet
-      const params = mediaId
-        ? { status: text, media_ids: mediaId }
-        : { status: text };
+    // ✏️ Posting tweet
+    const tweetBody = {
+      text: text || "",
+      ...(mediaId ? { media: { media_ids: [mediaId] } } : {}),
+    };
 
-      const tweet = await client.post("statuses/update", params);
-      console.log("Tweet success:", tweet.id_str);
+    console.log("🚀 Mengirim tweet ke API Twitter v2:", tweetBody);
 
-      res.status(200).json({ success: true, tweet });
+    const post = await fetch("https://api.twitter.com/2/tweets", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${bearerToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(tweetBody),
     });
-  } catch (error) {
-    console.error("Handler error:", error);
-    res.status(500).json({ error: error.message });
+
+    const result = await post.json();
+    console.log("📬 Respon kirim tweet:", result);
+
+    if (result.data) {
+      console.log("✅ Tweet berhasil terkirim:", result.data);
+      return res.status(200).json({ success: true, tweet: result.data });
+    } else {
+      console.log("❌ Gagal kirim tweet:", result);
+      return res.status(500).json({ error: "Gagal mengirim tweet", detail: result });
+    }
+
+  } catch (err) {
+    console.error("🔥 ERROR utama di server:", err);
+    return res.status(500).json({ error: "Server error", message: err.message });
   }
 }
