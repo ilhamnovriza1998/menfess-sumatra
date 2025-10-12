@@ -1,14 +1,13 @@
-import crypto from "crypto";
-import fs from "fs";
-import https from "https";
-import { formidable } from "formidable"; // => gunakan versi baru
-// no IncomingForm usage
+const crypto = require("crypto");
+const fs = require("fs");
+const https = require("https");
+const formidable = require("formidable");
 
-export const config = {
+exports.config = {
   api: { bodyParser: false },
 };
 
-export default async function handler(req, res) {
+exports.default = async function handler(req, res) {
   console.log("🔹 API postToTwitter dipanggil (v1.1)");
 
   if (req.method !== "POST") {
@@ -16,7 +15,6 @@ export default async function handler(req, res) {
   }
 
   try {
-    // buat form parser (formidable v3+)
     const form = formidable({ multiples: false, uploadDir: "/tmp", keepExtensions: true });
 
     form.parse(req, async (err, fields, files) => {
@@ -25,8 +23,10 @@ export default async function handler(req, res) {
         return res.status(500).json({ error: "Form parse error", detail: err.message });
       }
 
-      // ambil text dan file
-      const status = (fields.text && String(fields.text)) || (fields.status && String(fields.status)) || "";
+      const status =
+        (fields.text && String(fields.text)) ||
+        (fields.status && String(fields.status)) ||
+        "";
       const file = files.image || files.media || null;
       const imagePath = file?.filepath || file?.path || null;
 
@@ -36,7 +36,6 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: "Teks tidak boleh kosong" });
       }
 
-      // ambil kredensial dari env
       const consumer_key = process.env.TWITTER_API_KEY;
       const consumer_secret = process.env.TWITTER_API_KEY_SECRET;
       const access_token = process.env.TWITTER_ACCESS_TOKEN;
@@ -44,11 +43,12 @@ export default async function handler(req, res) {
 
       if (!consumer_key || !consumer_secret || !access_token || !access_token_secret) {
         console.error("❌ Missing twitter env keys");
-        return res.status(500).json({ error: "Missing Twitter credentials in environment variables" });
+        return res
+          .status(500)
+          .json({ error: "Missing Twitter credentials in environment variables" });
       }
 
       try {
-        // STEP: upload media (jika ada)
         let media_id = null;
         if (imagePath) {
           console.log("📤 Uploading media from:", imagePath);
@@ -60,8 +60,8 @@ export default async function handler(req, res) {
             access_token,
             access_token_secret,
             "POST",
-            {}, // query params
-            { media: imageData.toString("base64") } // body (form-urlencoded)
+            {},
+            { media: imageData.toString("base64") }
           );
           console.log("📦 Upload result:", uploadResult);
           if (uploadResult && uploadResult.media_id_string) {
@@ -69,11 +69,9 @@ export default async function handler(req, res) {
             console.log("✅ media_id:", media_id);
           } else {
             console.warn("⚠️ Upload mungkin gagal:", uploadResult);
-            // lanjutkan tanpa media atau return error tergantung kebutuhan
           }
         }
 
-        // STEP: post status
         const params = { status };
         if (media_id) params.media_ids = media_id;
 
@@ -100,11 +98,18 @@ export default async function handler(req, res) {
     console.error("🔥 FATAL ERROR:", fatalErr);
     return res.status(500).json({ error: fatalErr.message || "Unknown error" });
   }
-}
+};
 
-// Helper OAuth 1.0a request (simple)
-async function twitterRequest(url, consumer_key, consumer_secret, token, token_secret, method = "GET", params = {}, body = null) {
-  // prepare oauth params
+async function twitterRequest(
+  url,
+  consumer_key,
+  consumer_secret,
+  token,
+  token_secret,
+  method = "GET",
+  params = {},
+  body = null
+) {
   const oauth = {
     oauth_consumer_key: consumer_key,
     oauth_nonce: crypto.randomBytes(16).toString("hex"),
@@ -114,32 +119,34 @@ async function twitterRequest(url, consumer_key, consumer_secret, token, token_s
     oauth_version: "1.0",
   };
 
-  // merge params and oauth for signature base string
   const allParams = { ...params, ...oauth };
-  // if body has fields (like media), include them in base string as well (we already send as form-urlencoded)
   const sortedKeys = Object.keys(allParams).sort();
-  const paramString = sortedKeys.map(k => `${encodeURIComponent(k)}=${encodeURIComponent(allParams[k])}`).join("&");
+  const paramString = sortedKeys
+    .map((k) => `${encodeURIComponent(k)}=${encodeURIComponent(allParams[k])}`)
+    .join("&");
 
-  const baseString = `${method.toUpperCase()}&${encodeURIComponent(url)}&${encodeURIComponent(paramString)}`;
-  const signingKey = `${encodeURIComponent(consumer_secret)}&${encodeURIComponent(token_secret || "")}`;
+  const baseString = `${method.toUpperCase()}&${encodeURIComponent(url)}&${encodeURIComponent(
+    paramString
+  )}`;
+  const signingKey = `${encodeURIComponent(consumer_secret)}&${encodeURIComponent(
+    token_secret || ""
+  )}`;
   oauth.oauth_signature = crypto.createHmac("sha1", signingKey).update(baseString).digest("base64");
 
-  const authHeader = "OAuth " + Object.keys(oauth)
-    .map(k => `${encodeURIComponent(k)}="${encodeURIComponent(oauth[k])}"`)
-    .join(", ");
+  const authHeader =
+    "OAuth " +
+    Object.keys(oauth)
+      .map((k) => `${encodeURIComponent(k)}="${encodeURIComponent(oauth[k])}"`)
+      .join(", ");
 
-  // build request options
   const u = new URL(url);
   const options = {
     hostname: u.hostname,
     path: u.pathname + (u.search || ""),
     method: method.toUpperCase(),
-    headers: {
-      Authorization: authHeader,
-    },
+    headers: { Authorization: authHeader },
   };
 
-  // if body provided, we send as application/x-www-form-urlencoded
   let postData = null;
   if (body) {
     postData = new URLSearchParams(body).toString();
@@ -158,15 +165,16 @@ async function twitterRequest(url, consumer_key, consumer_secret, token, token_s
       res.on("end", () => {
         try {
           const parsed = JSON.parse(data);
-          if (parsed.errors) {
-            // return error object
-            return reject(parsed);
-          }
+          if (parsed.errors) return reject(parsed);
           resolve(parsed);
         } catch (err) {
-          return reject({ message: "Invalid JSON from twitter", raw: data });
+          reject({ message: "Invalid JSON from twitter", raw: data });
         }
       });
     });
 
-    req.on("error", (
+    req.on("error", (err) => reject(err));
+    if (postData) req.write(postData);
+    req.end();
+  });
+        }
