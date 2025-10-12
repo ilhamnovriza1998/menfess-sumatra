@@ -8,7 +8,7 @@
   },
   "dependencies": {
     "twitter-lite": "^1.1.0",
-    "formidable": "^3.5.1"
+    "formidable": "^3.6.0"
   },
   "engines": {
     "node": "22.x"
