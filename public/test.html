@@ -1,0 +1,19 @@
+<form id="tweetForm" enctype="multipart/form-data">
+  <textarea name="text" placeholder="Tulis menfess kamu..."></textarea>
+  <input type="file" name="image" accept="image/*" />
+  <button type="submit">Kirim</button>
+</form>
+
+<script>
+document.getElementById('tweetForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const formData = new FormData(e.target);
+  const res = await fetch('/api/postToTwitter', {
+    method: 'POST',
+    body: formData
+  });
+  const data = await res.json();
+  console.log(data);
+  alert(data.success ? 'Berhasil dikirim!' : 'Gagal: ' + (data.error || 'unknown'));
+});
+</script>
