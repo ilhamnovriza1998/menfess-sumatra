@@ -15,77 +15,83 @@ exports.default = async function handler(req, res) {
   }
 
   try {
-    // gunakan cara lama (v2/v3 compatible)
-    const form = new formidable.IncomingForm({ multiples: false, uploadDir: "/tmp", keepExtensions: true });
+    const form = new formidable.IncomingForm({
+      multiples: false,
+      uploadDir: "/tmp",
+      keepExtensions: true,
+    });
 
     form.parse(req, async (err, fields, files) => {
-      if (err) {
-        console.error("❌ Form parse error:", err);
-        return res.status(500).json({ error: "Form parse error", detail: err.message });
-      }
+      try {
+        if (err) {
+          console.error("❌ Form parse error:", err);
+          return res.status(500).json({ error: "Form parse error", detail: err.message });
+        }
 
-      const status = fields.text || fields.status || "";
-      const file = files.image || files.media || null;
-      const imagePath = file?.filepath || file?.path || null;
+        const status = fields.text || fields.status || "";
+        const file = files.image || files.media || null;
+        const imagePath = file?.filepath || file?.path || null;
 
-      console.log("📩 Received:", { statusLength: status.length, hasFile: !!imagePath });
+        console.log("📩 Received:", { statusLength: status.length, hasFile: !!imagePath });
 
-      if (!status) {
-        return res.status(400).json({ error: "Teks tidak boleh kosong" });
-      }
+        if (!status) {
+          return res.status(400).json({ error: "Teks tidak boleh kosong" });
+        }
 
-      // ambil kredensial dari env
-      const consumer_key = process.env.TWITTER_API_KEY;
-      const consumer_secret = process.env.TWITTER_API_KEY_SECRET;
-      const access_token = process.env.TWITTER_ACCESS_TOKEN;
-      const access_token_secret = process.env.TWITTER_ACCESS_TOKEN_SECRET;
+        const consumer_key = process.env.TWITTER_API_KEY;
+        const consumer_secret = process.env.TWITTER_API_KEY_SECRET;
+        const access_token = process.env.TWITTER_ACCESS_TOKEN;
+        const access_token_secret = process.env.TWITTER_ACCESS_TOKEN_SECRET;
 
-      if (!consumer_key || !consumer_secret || !access_token || !access_token_secret) {
-        console.error("❌ Missing twitter env keys");
-        return res.status(500).json({ error: "Missing Twitter credentials" });
-      }
+        if (!consumer_key || !consumer_secret || !access_token || !access_token_secret) {
+          console.error("❌ Missing twitter env keys");
+          return res.status(500).json({ error: "Missing Twitter credentials" });
+        }
 
-      // === Upload media jika ada ===
-      let media_id = null;
-      if (imagePath) {
-        console.log("📤 Uploading media...");
-        const imageData = fs.readFileSync(imagePath);
-        const uploadResult = await twitterRequest(
-          "https://upload.twitter.com/1.1/media/upload.json",
+        // === Upload media jika ada ===
+        let media_id = null;
+        if (imagePath) {
+          console.log("📤 Uploading media...");
+          const imageData = fs.readFileSync(imagePath);
+          try {
+            const uploadResult = await twitterRequest(
+              "https://upload.twitter.com/1.1/media/upload.json",
+              consumer_key,
+              consumer_secret,
+              access_token,
+              access_token_secret,
+              "POST",
+              {},
+              { media: imageData.toString("base64") }
+            );
+            media_id = uploadResult.media_id_string;
+            console.log("✅ media_id:", media_id);
+          } catch (uploadErr) {
+            console.warn("⚠️ Upload gagal:", uploadErr);
+          }
+        }
+
+        // === Posting status ===
+        const params = { status };
+        if (media_id) params.media_ids = media_id;
+
+        console.log("🚀 Posting status...");
+        const tweetResult = await twitterRequest(
+          "https://api.twitter.com/1.1/statuses/update.json",
           consumer_key,
           consumer_secret,
           access_token,
           access_token_secret,
           "POST",
-          {},
-          { media: imageData.toString("base64") }
+          params
         );
-        if (uploadResult && uploadResult.media_id_string) {
-          media_id = uploadResult.media_id_string;
-          console.log("✅ media_id:", media_id);
-        } else {
-          console.warn("⚠️ Upload gagal:", uploadResult);
-        }
+
+        console.log("✅ Tweet result:", tweetResult);
+        return res.status(200).json({ success: true, tweet: tweetResult });
+      } catch (innerErr) {
+        console.error("🔥 Inner error:", innerErr);
+        return res.status(500).json({ error: innerErr.message || innerErr });
       }
-
-      // === Posting status ===
-      const params = { status };
-      if (media_id) params.media_ids = media_id;
-
-      console.log("🚀 Posting status...");
-
-      const tweetResult = await twitterRequest(
-        "https://api.twitter.com/1.1/statuses/update.json",
-        consumer_key,
-        consumer_secret,
-        access_token,
-        access_token_secret,
-        "POST",
-        params
-      );
-
-      console.log("✅ Tweet result:", tweetResult);
-      return res.status(200).json({ success: true, tweet: tweetResult });
     });
   } catch (fatalErr) {
     console.error("🔥 FATAL ERROR:", fatalErr);
@@ -156,4 +162,4 @@ function twitterRequest(url, consumer_key, consumer_secret, token, token_secret,
     if (postData) req.write(postData);
     req.end();
   });
-               }
+}
