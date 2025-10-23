@@ -1,14 +1,13 @@
 // api/send-to-telegram.js
 const { Telegraf } = require('telegraf');
 
-module.exports = async (req, res) => {
+export default async function handler(req, res) {
   // Set CORS headers
   res.setHeader('Access-Control-Allow-Credentials', true);
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
   res.setHeader('Access-Control-Allow-Headers', 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version');
 
-  // Handle OPTIONS request
   if (req.method === 'OPTIONS') {
     res.status(200).end();
     return;
@@ -19,37 +18,85 @@ module.exports = async (req, res) => {
   }
 
   try {
-    const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN);
-    const channelId = process.env.TELEGRAM_CHANNEL;
+    console.log('🔧 Starting Telegram API...');
+    
+    const botToken = process.env.TELEGRAM_BOT_TOKEN;
+    const channelTarget = process.env.TELEGRAM_CHANNEL;
+    
+    console.log('Env Check - Token:', !!botToken, 'Channel:', channelTarget);
 
-    const { text, type } = req.body;
-    let imageFile = null;
-
-    // Handle file upload jika ada
-    if (type === 'photo' && req.files && req.files.image) {
-      imageFile = req.files.image;
+    if (!botToken) {
+      throw new Error('TELEGRAM_BOT_TOKEN not found in environment variables');
+    }
+    
+    if (!channelTarget) {
+      throw new Error('TELEGRAM_CHANNEL not found in environment variables');
     }
 
-    if (type === 'photo' && imageFile) {
-      // Kirim foto dengan caption
-      await bot.telegram.sendPhoto(channelId, 
-        { source: imageFile.data },
-        { caption: text }
-      );
+    const bot = new Telegraf(botToken);
+    
+    // Untuk Vercel, kita terima JSON saja dulu (simplified)
+    const { text, type, imageUrl } = req.body;
+
+    console.log('Received data:', { text, type, imageUrl });
+
+    if (!text) {
+      return res.status(400).json({ success: false, error: 'Text is required' });
+    }
+
+    if (type === 'photo' && imageUrl) {
+      // Kirim foto dari URL (simplified dulu)
+      await bot.telegram.sendPhoto(channelTarget, imageUrl, {
+        caption: text,
+        parse_mode: 'HTML'
+      });
     } else {
       // Kirim teks saja
-      await bot.telegram.sendMessage(channelId, text);
+      await bot.telegram.sendMessage(channelTarget, text, {
+        parse_mode: 'HTML'
+      });
     }
 
+    console.log('✅ Message sent successfully to Telegram');
+    
     res.status(200).json({ 
       success: true, 
-      message: 'Menfess berhasil dikirim ke Telegram' 
+      message: 'Menfess berhasil dikirim ke Telegram!' 
     });
+
   } catch (error) {
-    console.error('Error sending to Telegram:', error);
+    console.error('❌ Telegram API Error:', error);
+    
+    // Error handling yang lebih detail
+    let errorMessage = 'Gagal mengirim ke Telegram';
+    let errorDetails = '';
+
+    if (error.response) {
+      errorDetails = error.response.description || `Error ${error.response.error_code}`;
+    } else if (error.code) {
+      errorDetails = `Code: ${error.code}`;
+    } else {
+      errorDetails = error.message;
+    }
+
+    console.error('Error details:', errorDetails);
+
     res.status(500).json({ 
       success: false, 
-      error: 'Gagal mengirim ke Telegram: ' + error.message 
+      error: `${errorMessage}: ${errorDetails}`,
+      debug: {
+        hasToken: !!process.env.TELEGRAM_BOT_TOKEN,
+        hasChannel: !!process.env.TELEGRAM_CHANNEL,
+        channel: process.env.TELEGRAM_CHANNEL
+      }
     });
   }
+}
+
+export const config = {
+  api: {
+    bodyParser: {
+      sizeLimit: '4mb',
+    },
+  },
 };
