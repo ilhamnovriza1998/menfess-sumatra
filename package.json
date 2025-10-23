@@ -1,18 +1,7 @@
 {
   "name": "menfess-sumatra",
   "version": "1.0.0",
-  "description": "Web kirim menfess otomatis ke akun X (Twitter) - by Ilham Novriza",
-  "main": "api/post-to-telegram.js",
-  "scripts": {
-    "start": "vercel dev"
-  },
   "dependencies": {
-    "twitter-lite": "^1.1.0",
-    "formidable": "^3.5.1"
-  },
-  "engines": {
-    "node": "22.x"
-  },
-  "author": "Ilham Novriza",
-  "license": "MIT"
+    "telegraf": "^4.16.3"
+  }
 }
