@@ -20,7 +20,7 @@ module.exports = async (req, res) => {
 
   try {
     const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN);
-    const channelId = process.env.TELEGRAM_CHANNEL_ID;
+    const channelId = process.env.TELEGRAM_CHANNEL;
 
     const { text, type } = req.body;
     let imageFile = null;
