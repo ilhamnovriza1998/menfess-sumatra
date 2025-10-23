@@ -48,7 +48,6 @@
 
 <body class="text-white selection:bg-pink-500/30">
 
-  <!-- Header -->
   <header class="sticky top-0 z-40 backdrop-blur border-b border-white/10 bg-black/30">
     <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
       <a href="index.html" class="flex items-center gap-3 group">
@@ -74,7 +73,6 @@
     </div>
   </header>
 
-  <!-- Form -->
   <section id="form" class="py-12">
     <div class="max-w-2xl mx-auto px-4">
       <div class="text-center mb-8">
@@ -104,7 +102,6 @@
       
       <form id="menfessForm" class="glass rounded-2xl p-6 border border-white/10" enctype="multipart/form-data">
         
-        <!-- Pilihan tipe -->
         <div class="mb-6">
           <label for="type" class="block text-white/90 mb-2 font-semibold">Pilih Tipe Menfess</label>
           <select id="type" name="type" class="p-3 bg-white/5 border border-white/20 rounded-lg focus:outline-none w-full focus:border-pink-400 transition">
@@ -113,7 +110,6 @@
           </select>
         </div>
 
-        <!-- Input teks -->
         <div id="textInput" class="flex flex-col gap-4 mb-6">
           <div class="flex items-center justify-between">
             <label for="menfessText" class="text-white/90 font-semibold">Tulis Menfess</label>
@@ -131,7 +127,6 @@
           </div>
         </div>
 
-        <!-- Input foto -->
         <div id="photoInput" class="hidden flex flex-col gap-4 mb-6">
           <div class="flex items-center justify-between">
             <label for="menfessImage" class="text-white/90 font-semibold">🖼️ Pilih Foto</label>
@@ -159,7 +154,6 @@
           </div>
         </div>
 
-        <!-- Preview Hasil -->
         <div id="previewSection" class="hidden mb-6 p-4 bg-white/5 rounded-lg border border-white/10">
           <h4 class="font-semibold mb-3 text-pink-400">📋 Preview Menfess:</h4>
           <div id="textPreview" class="hidden">
@@ -182,14 +176,12 @@
           </div>
         </div>
 
-        <!-- Tombol kirim -->
         <button type="submit" class="w-full btn-neon rounded-full px-5 py-3.5 bg-gradient-to-r from-pink-500 to-purple-600 font-bold hover:scale-[1.02] active:scale-95 transition flex items-center justify-center gap-2 text-lg">
           🚀 Kirim Menfess
         </button>
         <p id="status" class="text-center mt-4 text-sm text-white/70"></p>
       </form>
 
-      <!-- Info Channel Telegram -->
       <div class="glass rounded-2xl p-6 border border-white/10 mt-6 text-center">
         <div class="flex items-center justify-center gap-3 mb-3">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" class="text-blue-400">
@@ -205,7 +197,6 @@
     </div>
   </section>
 
-  <!-- Success Popup -->
   <div id="successPopup" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/70 backdrop-blur-sm">
     <div class="glass rounded-3xl p-8 mx-4 max-w-md w-full text-center success-popup border-2 border-green-400/50">
       <div class="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-r from-green-400 to-teal-500 flex items-center justify-center">
@@ -227,7 +218,6 @@
     </div>
   </div>
 
-  <!-- Footer -->
   <footer class="mt-10 border-t border-white/10">
     <div class="max-w-6xl mx-auto px-4 py-8 text-sm text-white/70 flex flex-col sm:flex-row items-center justify-between gap-4">
       <p>© <span id="year"></span> Menfess Sumatra. All rights reserved.</p>
@@ -456,106 +446,78 @@
       }
     }
 
-    // Kirim ke Telegram via API Vercel - YANG INI YANG DIPERBAIKI
+    // Kirim ke Telegram via API Vercel - HANYA GUNAKAN SATU LISTENER INI
     document.getElementById("menfessForm").addEventListener("submit", async (e) => {
       e.preventDefault();
       const status = document.getElementById("status");
       const submitBtn = e.target.querySelector('button[type="submit"]');
       
+      // 1. Cek Batasan Kirim
       if (!canSendMenfess()) {
         status.textContent = "❌ Kamu sudah mengirim 2 menfess hari ini. Coba lagi besok!";
         status.className = "text-center mt-4 text-sm text-red-400";
         return;
       }
 
-      // Disable button selama proses
+      // 2. Tampilkan Status Loading
       submitBtn.disabled = true;
       submitBtn.innerHTML = "⏳ Mengirim...";
-      
       status.textContent = "⏳ Mengirim menfess ke Telegram...";
       status.className = "text-center mt-4 text-sm text-yellow-400";
 
       const type = typeSelect.value;
       const formData = new FormData();
 
-      // Auto tambah hashtag #pekanbaru
+      // 3. Persiapan Data dan Validasi
       if (type === "text") {
-        const text = `${menfessText.value}\n\n#pekanbaru`;
+        const textValue = menfessText.value.trim();
+        
+        // Validasi teks kosong (Mode Teks)
+        if (!textValue) {
+           status.textContent = "⚠️ Teks menfess tidak boleh kosong.";
+           status.className = "text-center mt-4 text-sm text-red-400";
+           submitBtn.disabled = false;
+           submitBtn.innerHTML = "🚀 Kirim Menfess";
+           return;
+        }
+
+        const text = `${textValue}\n\n#pekanbaru`;
         formData.append('text', text);
         formData.append('type', 'text');
-      } else {
+        
+      } else { // Mode Photo
         const caption = menfessCaption.value ? `${menfessCaption.value}\n\n#pekanbaru` : '#pekanbaru';
         formData.append('text', caption);
         formData.append('type', 'photo');
         
         const imageFile = document.getElementById("menfessImage").files[0];
-        if (imageFile) {
-          formData.append('image', imageFile);
-        } else {
-          // jika user pilih mode foto tapi belum pilih gambar -> beritahu dan batalkan
+        
+        // Validasi foto kosong (Mode Foto)
+        if (!imageFile) {
           status.textContent = "⚠️ Pilih foto terlebih dahulu sebelum mengirim.";
           status.className = "text-center mt-4 text-sm text-red-400";
           submitBtn.disabled = false;
           submitBtn.innerHTML = "🚀 Kirim Menfess";
           return;
         }
+
+        formData.append('image', imageFile);
       }
 
-      // Panggil function untuk kirim
+      // 4. Panggil function untuk kirim
       await sendToTelegram(formData, status, submitBtn, e.target);
     });
 
+    // HAPUS KODE BERIKUT (EVENT LISTENER DUPLIKAT)
+    /*
     // Tangani event submit form
     const menfessForm = document.getElementById("menfessForm");
     menfessForm.addEventListener("submit", async function (e) {
       e.preventDefault(); // cegah reload halaman
 
-      const submitBtn = menfessForm.querySelector("button[type='submit']");
-      const status = document.getElementById("status");
-
-      if (!canSendMenfess()) {
-        status.textContent = "❌ Kamu sudah mengirim 2 menfess hari ini. Coba lagi besok.";
-        return;
-      }
-
-      const type = typeSelect.value;
-      const formData = new FormData();
-
-      if (type === "text") {
-        const text = menfessText.value.trim();
-        if (!text) {
-          status.textContent = "⚠️ Teks menfess tidak boleh kosong.";
-          return;
-        }
-        formData.append("type", "text");
-        formData.append("text", text + " #pekanbaru");
-      } else {
-        const caption = menfessCaption.value.trim();
-        const imageFile = document.getElementById("menfessImage").files[0];
-        if (!imageFile) {
-          status.textContent = "⚠️ Silakan pilih foto terlebih dahulu.";
-          return;
-        }
-        formData.append("type", "photo");
-        formData.append("caption", caption + " #pekanbaru");
-        formData.append("image", imageFile);
-      }
-
-      status.textContent = "⏳ Mengirim menfess...";
-      submitBtn.disabled = true;
-      submitBtn.textContent = "Mengirim...";
-
-      try {
-        await sendToTelegram(formData, status, submitBtn, menfessForm);
-        status.textContent = "";
-      } catch (error) {
-        console.error(error);
-        status.textContent = "❌ Gagal mengirim menfess. Coba lagi nanti.";
-      } finally {
-        submitBtn.disabled = false;
-        submitBtn.textContent = "🚀 Kirim Menfess";
-      }
+      // ... (seluruh kode di dalamnya)
     });
+    */
   </script>
 </body>
 </html>
