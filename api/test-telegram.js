@@ -1,27 +1,41 @@
-// File: api/test-telegram.js (buat untuk testing)
-const { Telegraf } = require('telegraf');
+// api/test.js
+export default async function handler(req, res) {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-module.exports = async (req, res) => {
-  try {
-    const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN);
-    
-    // Test kirim pesan sederhana
-    await bot.telegram.sendMessage(
-      process.env.TELEGRAM_CHANNEL,
-      '🔧 TEST: Bot berhasil terhubung!',
-      { parse_mode: 'HTML' }
-    );
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
 
-    res.status(200).json({ 
+  if (req.method === 'GET') {
+    return res.status(200).json({ 
       success: true, 
-      message: 'Test berhasil! Bot terhubung ke Telegram.' 
-    });
-  } catch (error) {
-    console.error('Error test:', error);
-    res.status(500).json({ 
-      success: false, 
-      error: error.message,
-      details: error.response || 'No response details'
+      message: 'API is working!',
+      env: {
+        hasToken: !!process.env.TELEGRAM_BOT_TOKEN,
+        hasChannel: !!process.env.TELEGRAM_CHANNEL,
+        channel: process.env.TELEGRAM_CHANNEL
+      }
     });
   }
-};
+
+  if (req.method === 'POST') {
+    try {
+      const { message } = req.body;
+      
+      return res.status(200).json({ 
+        success: true, 
+        received: message,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      return res.status(500).json({ 
+        success: false, 
+        error: error.message 
+      });
+    }
+  }
+
+  return res.status(405).json({ success: false, error: 'Method not allowed' });
+}
