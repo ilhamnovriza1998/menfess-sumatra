@@ -1,135 +1,66 @@
 // api/send-to-telegram.js
-const { Telegraf } = require('telegraf');
+import { Telegraf } from 'telegraf';
+
+// ✅ aktifkan parser body JSON agar req.body terbaca di Vercel
+export const config = {
+  api: {
+    bodyParser: true,
+  },
+};
 
 export default async function handler(req, res) {
-  // Set CORS headers
-  res.setHeader('Access-Control-Allow-Credentials', true);
+  // Izinkan CORS agar bisa diakses dari frontend
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
-  res.setHeader('Access-Control-Allow-Headers', 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  if (req.method === 'OPTIONS') return res.status(200).end();
 
-  if (req.method === 'OPTIONS') {
-    res.status(200).end();
-    return;
-  }
-
+  // Hanya izinkan POST
   if (req.method !== 'POST') {
     return res.status(405).json({ success: false, error: 'Method not allowed' });
   }
 
   try {
-    console.log('🔧 Starting Telegram API...');
-    
     const botToken = process.env.TELEGRAM_BOT_TOKEN;
     const channelTarget = process.env.TELEGRAM_CHANNEL;
-    
-    console.log('Environment:', {
-      tokenLength: botToken ? botToken.length : 0,
-      channel: channelTarget,
-      channelType: typeof channelTarget
-    });
 
-    if (!botToken) {
-      throw new Error('TELEGRAM_BOT_TOKEN not found');
-    }
-    
-    if (!channelTarget) {
-      throw new Error('TELEGRAM_CHANNEL not found');
+    if (!botToken || !channelTarget) {
+      throw new Error('Environment variable TELEGRAM_BOT_TOKEN atau TELEGRAM_CHANNEL belum diatur');
     }
 
     const bot = new Telegraf(botToken);
-    
-    // Parse JSON body
-    const { text, type } = req.body;
-
-    console.log('📨 Received request:', { 
-      text: text ? text.substring(0, 100) + '...' : 'empty',
-      type: type,
-      bodyKeys: Object.keys(req.body)
-    });
+    const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
+    const { text, type, photoUrl } = body;
 
     if (!text || text.trim() === '') {
-      return res.status(400).json({ 
-        success: false, 
-        error: 'Text is required and cannot be empty' 
-      });
+      return res.status(400).json({ success: false, error: 'Teks tidak boleh kosong' });
     }
 
-    console.log('📤 Sending to Telegram...');
-    console.log('Channel:', channelTarget);
-    console.log('Message length:', text.length);
-
-    // Test dengan method yang berbeda
     let result;
-    
-    if (type === 'photo') {
-      // Untuk foto, kita kirim teks dulu (simplified)
-      console.log('🖼️ Photo type detected, sending as text for now...');
-      result = await bot.telegram.sendMessage(channelTarget, text + '\n\n[Foto akan dikirim terpisah]', {
-        parse_mode: 'HTML'
+    if (type === 'photo' && photoUrl) {
+      // kirim foto + caption
+      result = await bot.telegram.sendPhoto(channelTarget, photoUrl, {
+        caption: text,
+        parse_mode: 'HTML',
       });
     } else {
-      // Kirim teks biasa
+      // kirim teks biasa
       result = await bot.telegram.sendMessage(channelTarget, text, {
-        parse_mode: 'HTML'
+        parse_mode: 'HTML',
       });
     }
 
-    console.log('✅ Telegram API Response:', {
+    return res.status(200).json({
+      success: true,
+      message: '✅ Menfess berhasil dikirim ke Telegram!',
       messageId: result.message_id,
-      date: result.date,
-      chat: result.chat
-    });
-
-    res.status(200).json({ 
-      success: true, 
-      message: 'Menfess berhasil dikirim ke Telegram!',
-      messageId: result.message_id
     });
 
   } catch (error) {
-    console.error('❌ Telegram API Error Details:');
-    console.error('Error name:', error.name);
-    console.error('Error message:', error.message);
-    console.error('Error code:', error.code);
-    console.error('Error response:', error.response);
-    
-    if (error.response) {
-      console.error('Telegram API Error:', {
-        errorCode: error.response.error_code,
-        description: error.response.description,
-        parameters: error.response.parameters
-      });
-    }
-
-    let userMessage = 'Gagal mengirim ke Telegram';
-    let debugInfo = {};
-
-    if (error.response) {
-      switch (error.response.error_code) {
-        case 400:
-          userMessage = 'Bad Request: Pastikan channel username benar';
-          break;
-        case 403:
-          userMessage = 'Bot tidak memiliki akses ke channel. Pastikan bot sudah jadi admin di channel @menfesssumatra';
-          break;
-        case 404:
-          userMessage = 'Channel tidak ditemukan. Pastikan username @menfesssumatra benar';
-          break;
-        default:
-          userMessage = `Telegram Error: ${error.response.description}`;
-      }
-      debugInfo.telegramError = error.response.description;
-    } else if (error.code === 'ETELEGRAM') {
-      userMessage = 'Error koneksi ke Telegram';
-    } else {
-      userMessage = error.message;
-    }
-
-    res.status(500).json({ 
-      success: false, 
-      error: userMessage,
-      debug: debugInfo
+    console.error('❌ Error Telegram:', error.message);
+    return res.status(500).json({
+      success: false,
+      error: error.message,
     });
   }
-                }
+}
