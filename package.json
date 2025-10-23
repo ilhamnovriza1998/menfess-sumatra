@@ -2,7 +2,7 @@
   "name": "menfess-sumatra",
   "version": "1.0.0",
   "description": "Web kirim menfess otomatis ke akun X (Twitter) - by Ilham Novriza",
-  "main": "api/postToTwitter.js",
+  "main": "api/post-to-telegram.js",
   "scripts": {
     "start": "vercel dev"
   },
