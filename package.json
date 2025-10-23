@@ -15,7 +15,8 @@
     "formidable": "^3.5.2",
     "multer": "^1.4.5-lts.1",
     "node-fetch": "^3.3.2",
-    "telegraf": "^4.15.0"
+    "telegraf": "^4.15.0",
+    "fs": "^0.0.1-security"
   },
   "engines": {
     "node": ">=18"
