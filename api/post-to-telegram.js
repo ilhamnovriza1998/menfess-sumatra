@@ -2,6 +2,8 @@
 import { Telegraf } from "telegraf";
 import formidable from "formidable";
 import fs from "fs";
+import path from 'path'; // <--- BARU: Untuk menangani jalur file absolut
+import Jimp from 'jimp'; // <--- BARU: Untuk memproses dan watermarking gambar
 
 // ✅ Nonaktifkan bodyParser bawaan Next/Vercel agar bisa handle multipart (upload foto)
 export const config = {
@@ -9,6 +11,10 @@ export const config = {
     bodyParser: false,
   },
 };
+
+// Definisikan jalur absolut ke file watermark
+// Ini memastikan Vercel dapat menemukan file yang ada di folder 'public'
+const WATERMARK_PATH = path.join(process.cwd(), 'public', 'watermark.png'); 
 
 export default async function handler(req, res) {
   // 🌐 Izinkan CORS agar bisa diakses dari front-end HTML mana pun
@@ -77,26 +83,63 @@ export default async function handler(req, res) {
       const filePath = imageFile.filepath; 
 
       if (!filePath || !fs.existsSync(filePath)) {
-        // Jika file tidak ada, ini mungkin akibat user menekan kirim tanpa memilih file (meski sudah divalidasi di frontend)
         return res.status(400).json({ success: false, error: "Tidak ada file foto yang terdeteksi." });
       }
 
-      let fileBuffer;
+      let finalBuffer; // Buffer yang akan dikirim ke Telegram (sudah di-watermark)
+      let originalBuffer; // Buffer file asli dari upload
+
+      // 1. Baca file foto asli dan lakukan Watermarking
       try {
-        // Ambil isi file sebagai Buffer
-        fileBuffer = fs.readFileSync(filePath);
-      } catch (readError) {
-        console.error("Gagal membaca file sementara:", readError);
-        throw new Error("Gagal memproses file foto.");
-      }
+        
+        // Baca file foto asli
+        originalBuffer = fs.readFileSync(filePath);
+        
+        // Cek apakah file watermark ada
+        if (!fs.existsSync(WATERMARK_PATH)) {
+            console.warn("⚠️ File watermark.png tidak ditemukan di path:", WATERMARK_PATH);
+            // Jika watermark hilang, gunakan buffer asli sebagai fallback
+            finalBuffer = originalBuffer; 
+            throw new Error("Watermark file not found, sending original photo."); 
+        }
+        
+        // Proses Jimp
+        const image = await Jimp.read(originalBuffer);
+        const watermark = await Jimp.read(WATERMARK_PATH);
+
+        // Atur ukuran watermark (misalnya, menjadi 1/5 lebar foto)
+        watermark.resize(image.bitmap.width / 5, Jimp.AUTO); 
+        
+        // Atur opacity watermark (50%)
+        watermark.opacity(0.5);
+
+        // Hitung posisi (sudut kanan bawah dengan padding 20px)
+        const x = image.bitmap.width - watermark.bitmap.width - 20;
+        const y = image.bitmap.height - watermark.bitmap.height - 20;
+
+        // Gabungkan watermark ke gambar
+        image.composite(watermark, x, y); 
+
+        // Dapatkan Buffer gambar hasil watermarking (menggunakan format JPEG untuk Telegram)
+        finalBuffer = await image.getBufferAsync(Jimp.MIME_JPEG);
+        
+        console.log("✅ Watermarking berhasil dilakukan.");
+
+      } catch (watermarkError) {
+        console.error("❌ Gagal saat watermarking:", watermarkError.message);
+        // Fallback: Jika terjadi error (misal Jimp gagal), kirim buffer asli
+        if (!finalBuffer) {
+           finalBuffer = originalBuffer || fs.readFileSync(filePath);
+        }
+      } 
       
+      // 2. Kirim ke Telegram (menggunakan finalBuffer)
       try {
-        // KIRIM FOTO KE TELEGRAM
         result = await bot.telegram.sendPhoto(
           channelTarget,
           { 
-            source: fileBuffer,
-            filename: imageFile.originalFilename || 'photo.jpg' // Tambah nama file untuk Telegraf
+            source: finalBuffer, // Menggunakan finalBuffer (yang sudah di-watermark atau asli)
+            filename: imageFile.originalFilename || 'photo.jpg'
           },
           {
             caption: text,
@@ -141,4 +184,4 @@ export default async function handler(req, res) {
       error: displayError || "Terjadi kesalahan tidak dikenal saat mengirim ke Telegram.",
     });
   }
-                                     }
+}
