@@ -504,6 +504,58 @@
       // Panggil function untuk kirim
       await sendToTelegram(formData, status, submitBtn, e.target);
     });
+
+    // Tangani event submit form
+    const menfessForm = document.getElementById("menfessForm");
+    menfessForm.addEventListener("submit", async function (e) {
+      e.preventDefault(); // cegah reload halaman
+
+      const submitBtn = menfessForm.querySelector("button[type='submit']");
+      const status = document.getElementById("status");
+
+      if (!canSendMenfess()) {
+        status.textContent = "❌ Kamu sudah mengirim 2 menfess hari ini. Coba lagi besok.";
+        return;
+      }
+
+      const type = typeSelect.value;
+      const formData = new FormData();
+
+      if (type === "text") {
+        const text = menfessText.value.trim();
+        if (!text) {
+          status.textContent = "⚠️ Teks menfess tidak boleh kosong.";
+          return;
+        }
+        formData.append("type", "text");
+        formData.append("text", text + " #pekanbaru");
+      } else {
+        const caption = menfessCaption.value.trim();
+        const imageFile = document.getElementById("menfessImage").files[0];
+        if (!imageFile) {
+          status.textContent = "⚠️ Silakan pilih foto terlebih dahulu.";
+          return;
+        }
+        formData.append("type", "photo");
+        formData.append("caption", caption + " #pekanbaru");
+        formData.append("image", imageFile);
+      }
+
+      status.textContent = "⏳ Mengirim menfess...";
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Mengirim...";
+
+      try {
+        await sendToTelegram(formData, status, submitBtn, menfessForm);
+        status.textContent = "";
+      } catch (error) {
+        console.error(error);
+        status.textContent = "❌ Gagal mengirim menfess. Coba lagi nanti.";
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = "🚀 Kirim Menfess";
+      }
+    });
   </script>
 </body>
 </html>
