@@ -23,80 +23,113 @@ export default async function handler(req, res) {
     const botToken = process.env.TELEGRAM_BOT_TOKEN;
     const channelTarget = process.env.TELEGRAM_CHANNEL;
     
-    console.log('Env Check - Token:', !!botToken, 'Channel:', channelTarget);
+    console.log('Environment:', {
+      tokenLength: botToken ? botToken.length : 0,
+      channel: channelTarget,
+      channelType: typeof channelTarget
+    });
 
     if (!botToken) {
-      throw new Error('TELEGRAM_BOT_TOKEN not found in environment variables');
+      throw new Error('TELEGRAM_BOT_TOKEN not found');
     }
     
     if (!channelTarget) {
-      throw new Error('TELEGRAM_CHANNEL not found in environment variables');
+      throw new Error('TELEGRAM_CHANNEL not found');
     }
 
     const bot = new Telegraf(botToken);
     
-    // Untuk Vercel, kita terima JSON saja dulu (simplified)
-    const { text, type, imageUrl } = req.body;
+    // Parse JSON body
+    const { text, type } = req.body;
 
-    console.log('Received data:', { text, type, imageUrl });
+    console.log('📨 Received request:', { 
+      text: text ? text.substring(0, 100) + '...' : 'empty',
+      type: type,
+      bodyKeys: Object.keys(req.body)
+    });
 
-    if (!text) {
-      return res.status(400).json({ success: false, error: 'Text is required' });
+    if (!text || text.trim() === '') {
+      return res.status(400).json({ 
+        success: false, 
+        error: 'Text is required and cannot be empty' 
+      });
     }
 
-    if (type === 'photo' && imageUrl) {
-      // Kirim foto dari URL (simplified dulu)
-      await bot.telegram.sendPhoto(channelTarget, imageUrl, {
-        caption: text,
+    console.log('📤 Sending to Telegram...');
+    console.log('Channel:', channelTarget);
+    console.log('Message length:', text.length);
+
+    // Test dengan method yang berbeda
+    let result;
+    
+    if (type === 'photo') {
+      // Untuk foto, kita kirim teks dulu (simplified)
+      console.log('🖼️ Photo type detected, sending as text for now...');
+      result = await bot.telegram.sendMessage(channelTarget, text + '\n\n[Foto akan dikirim terpisah]', {
         parse_mode: 'HTML'
       });
     } else {
-      // Kirim teks saja
-      await bot.telegram.sendMessage(channelTarget, text, {
+      // Kirim teks biasa
+      result = await bot.telegram.sendMessage(channelTarget, text, {
         parse_mode: 'HTML'
       });
     }
 
-    console.log('✅ Message sent successfully to Telegram');
-    
+    console.log('✅ Telegram API Response:', {
+      messageId: result.message_id,
+      date: result.date,
+      chat: result.chat
+    });
+
     res.status(200).json({ 
       success: true, 
-      message: 'Menfess berhasil dikirim ke Telegram!' 
+      message: 'Menfess berhasil dikirim ke Telegram!',
+      messageId: result.message_id
     });
 
   } catch (error) {
-    console.error('❌ Telegram API Error:', error);
+    console.error('❌ Telegram API Error Details:');
+    console.error('Error name:', error.name);
+    console.error('Error message:', error.message);
+    console.error('Error code:', error.code);
+    console.error('Error response:', error.response);
     
-    // Error handling yang lebih detail
-    let errorMessage = 'Gagal mengirim ke Telegram';
-    let errorDetails = '';
-
     if (error.response) {
-      errorDetails = error.response.description || `Error ${error.response.error_code}`;
-    } else if (error.code) {
-      errorDetails = `Code: ${error.code}`;
-    } else {
-      errorDetails = error.message;
+      console.error('Telegram API Error:', {
+        errorCode: error.response.error_code,
+        description: error.response.description,
+        parameters: error.response.parameters
+      });
     }
 
-    console.error('Error details:', errorDetails);
+    let userMessage = 'Gagal mengirim ke Telegram';
+    let debugInfo = {};
+
+    if (error.response) {
+      switch (error.response.error_code) {
+        case 400:
+          userMessage = 'Bad Request: Pastikan channel username benar';
+          break;
+        case 403:
+          userMessage = 'Bot tidak memiliki akses ke channel. Pastikan bot sudah jadi admin di channel @menfesssumatra';
+          break;
+        case 404:
+          userMessage = 'Channel tidak ditemukan. Pastikan username @menfesssumatra benar';
+          break;
+        default:
+          userMessage = `Telegram Error: ${error.response.description}`;
+      }
+      debugInfo.telegramError = error.response.description;
+    } else if (error.code === 'ETELEGRAM') {
+      userMessage = 'Error koneksi ke Telegram';
+    } else {
+      userMessage = error.message;
+    }
 
     res.status(500).json({ 
       success: false, 
-      error: `${errorMessage}: ${errorDetails}`,
-      debug: {
-        hasToken: !!process.env.TELEGRAM_BOT_TOKEN,
-        hasChannel: !!process.env.TELEGRAM_CHANNEL,
-        channel: process.env.TELEGRAM_CHANNEL
-      }
+      error: userMessage,
+      debug: debugInfo
     });
   }
-}
-
-export const config = {
-  api: {
-    bodyParser: {
-      sizeLimit: '4mb',
-    },
-  },
-};
+                }
