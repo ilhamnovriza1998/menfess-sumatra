@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Kirim Menfess - Base Pekanbaru</title>
-  <meta name="description" content="Kirim menfess teks atau foto untuk Base Pekanbaru. Anonim, cepat, dan langsung diposting ke Twitter!" />
+  <meta name="description" content="Kirim menfess teks atau foto untuk Base Pekanbaru. Anonim & langsung masuk channel Telegram dan Twitter/X" />
   <meta name="theme-color" content="#8a2be2" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -14,6 +14,35 @@
     body { background: #07070c; font-family: 'Outfit', sans-serif; }
     .glass { backdrop-filter: blur(12px) saturate(120%); background: rgba(17, 24, 39, .55); border: 1px solid rgba(255,255,255,.08); }
     .btn-neon { box-shadow: 0 0 15px rgba(255,62,165,.65), 0 0 40px rgba(63,243,255,.35); }
+    .confetti { position: fixed; width: 10px; height: 10px; background: #ff3ea5; opacity: 0; }
+    @keyframes confetti-fall { 
+      0% { transform: translateY(-100vh) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
+    }
+    .success-popup {
+      animation: success-bounce 0.6s ease-out;
+    }
+    @keyframes success-bounce {
+      0% { transform: scale(0.3); opacity: 0; }
+      50% { transform: scale(1.05); }
+      70% { transform: scale(0.95); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    .watermark-container {
+      position: relative;
+      display: inline-block;
+    }
+    .watermark {
+      position: absolute;
+      bottom: 15px;
+      right: 15px;
+      opacity: 0.5;
+      pointer-events: none;
+    }
+    .watermark img {
+      width: 40px;
+      height: 40px;
+    }
   </style>
 </head>
 
@@ -22,7 +51,7 @@
   <!-- Header -->
   <header class="sticky top-0 z-40 backdrop-blur border-b border-white/10 bg-black/30">
     <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-      <a href="#" class="flex items-center gap-3 group">
+      <a href="index.html" class="flex items-center gap-3 group">
         <svg width="28" height="28" viewBox="0 0 24 24" fill="none" class="drop-shadow" aria-hidden="true">
           <path d="M12 2l3.09 6.26L22 9.27l-5 4.88L18.18 22 12 18.77 5.82 22 7 14.15l-5-4.88 6.91-1.01L12 2z" stroke="#ff3ea5" stroke-width="1.2" fill="url(#g)"/>
           <defs>
@@ -47,43 +76,156 @@
 
   <!-- Form -->
   <section id="form" class="py-12">
-    <div class="max-w-6xl mx-auto px-4">
-      <h2 class="text-3xl font-extrabold">Kirim Menfess untuk <span class="text-pink-400">Base Pekanbaru</span></h2>
-      <p class="mt-2 text-white/80">Kirim menfess teks atau foto secara anonim. Maksimal 2 kali kirim per hari.</p>
+    <div class="max-w-2xl mx-auto px-4">
+      <div class="text-center mb-8">
+        <h2 class="text-3xl font-extrabold">Kirim Menfess untuk <span class="text-pink-400">Base Pekanbaru</span></h2>
+        <p class="mt-2 text-white/80">Kirim menfess teks atau foto secara anonim. Langsung masuk channel Telegram dan Twitter/X</p>
+        <div class="mt-4 flex flex-wrap gap-2 justify-center">
+          <div class="inline-flex items-center gap-2 px-3 py-1 bg-teal-500/20 border border-teal-400/30 rounded-full text-teal-300 text-sm">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15h-2v-6h2v6zm4 0h-2v-6h2v6z"/>
+            </svg>
+            Maksimal 2x/hari
+          </div>
+          <div class="inline-flex items-center gap-2 px-3 py-1 bg-pink-500/20 border border-pink-400/30 rounded-full text-pink-300 text-sm">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/>
+            </svg>
+            Auto hashtag #pekanbaru
+          </div>
+          <div class="inline-flex items-center gap-2 px-3 py-1 bg-blue-500/20 border border-blue-400/30 rounded-full text-blue-300 text-sm">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
+            </svg>
+            Auto watermark
+          </div>
+        </div>
+      </div>
       
-      <form id="menfessForm" class="mt-6 grid gap-6" enctype="multipart/form-data">
+      <form id="menfessForm" class="glass rounded-2xl p-6 border border-white/10" enctype="multipart/form-data">
         
         <!-- Pilihan tipe -->
-        <div>
-          <label for="type" class="text-white/90">Pilih Tipe Menfess</label>
-          <select id="type" name="type" class="p-3 bg-white/5 border border-white/20 rounded-lg focus:outline-none w-full">
-            <option value="text">Teks</option>
-            <option value="photo">Foto + Caption</option>
+        <div class="mb-6">
+          <label for="type" class="block text-white/90 mb-2 font-semibold">Pilih Tipe Menfess</label>
+          <select id="type" name="type" class="p-3 bg-white/5 border border-white/20 rounded-lg focus:outline-none w-full focus:border-pink-400 transition">
+            <option value="text">📝 Teks Saja</option>
+            <option value="photo">🖼️ Foto + Caption</option>
           </select>
         </div>
 
         <!-- Input teks -->
-        <div id="textInput" class="flex flex-col gap-4">
-          <label for="menfessText" class="text-white/90">Tulis Menfess</label>
-          <textarea id="menfessText" name="text" rows="4" class="p-3 bg-white/5 border border-white/20 rounded-lg focus:outline-none" placeholder="Tulis menfess Anda..." required></textarea>
+        <div id="textInput" class="flex flex-col gap-4 mb-6">
+          <div class="flex items-center justify-between">
+            <label for="menfessText" class="text-white/90 font-semibold">Tulis Menfess</label>
+            <span class="text-xs text-pink-400 bg-pink-400/10 px-2 py-1 rounded-full">Auto #pekanbaru</span>
+          </div>
+          <div class="relative">
+            <textarea id="menfessText" name="text" rows="4" class="p-3 bg-white/5 border border-white/20 rounded-lg focus:outline-none focus:border-pink-400 transition w-full" placeholder="Tulis menfess kamu di sini... ✨" required></textarea>
+            <div class="absolute bottom-3 right-3 text-xs text-white/40">
+              #pekanbaru
+            </div>
+          </div>
+          <div class="text-xs text-white/60 flex justify-between">
+            <span>💡 Tips: Tambahkan lokasi seperti #Panam #Sudirman dll</span>
+            <span id="charCount">0/380</span>
+          </div>
         </div>
 
         <!-- Input foto -->
-        <div id="photoInput" class="hidden flex flex-col gap-4">
-          <label for="menfessImage" class="text-white/90">Pilih Foto</label>
-          <input type="file" id="menfessImage" name="image" class="p-3 bg-white/5 border border-white/20 rounded-lg focus:outline-none" accept="image/*">
-          <label for="menfessCaption" class="text-white/90">Caption Foto</label>
-          <textarea id="menfessCaption" name="caption" rows="2" class="p-3 bg-white/5 border border-white/20 rounded-lg focus:outline-none" placeholder="Tuliskan caption untuk foto..."></textarea>
+        <div id="photoInput" class="hidden flex flex-col gap-4 mb-6">
+          <div class="flex items-center justify-between">
+            <label for="menfessImage" class="text-white/90 font-semibold">🖼️ Pilih Foto</label>
+            <span class="text-xs text-pink-400 bg-pink-400/10 px-2 py-1 rounded-full">Auto watermark</span>
+          </div>
+          <div class="border-2 border-dashed border-white/20 rounded-lg p-6 text-center hover:border-pink-400 transition cursor-pointer" onclick="document.getElementById('menfessImage').click()">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" class="mx-auto mb-2 opacity-60">
+              <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z" fill="currentColor"/>
+            </svg>
+            <p class="text-white/70">Klik untuk upload foto</p>
+            <p class="text-xs text-white/50 mt-1">Format: JPG, PNG (Maks 5MB)</p>
+          </div>
+          <input type="file" id="menfessImage" name="image" class="hidden" accept="image/*">
+          <div id="imagePreview" class="hidden mt-2"></div>
+          
+          <label for="menfessCaption" class="text-white/90 font-semibold">✏️ Caption Foto</label>
+          <div class="relative">
+            <textarea id="menfessCaption" name="caption" rows="2" class="p-3 bg-white/5 border border-white/20 rounded-lg focus:outline-none focus:border-pink-400 transition w-full" placeholder="Tuliskan caption untuk foto..."></textarea>
+            <div class="absolute bottom-3 right-3 text-xs text-white/40">
+              #pekanbaru
+            </div>
+          </div>
+          <div class="text-xs text-white/60">
+            <span>💡 Caption akan otomatis ditambah #pekanbaru & watermark logo</span>
+          </div>
+        </div>
+
+        <!-- Preview Hasil -->
+        <div id="previewSection" class="hidden mb-6 p-4 bg-white/5 rounded-lg border border-white/10">
+          <h4 class="font-semibold mb-3 text-pink-400">📋 Preview Menfess:</h4>
+          <div id="textPreview" class="hidden">
+            <div class="bg-black/30 p-3 rounded-lg border border-white/10">
+              <p id="previewText" class="text-white/90"></p>
+              <p class="text-pink-400 text-sm mt-1">#pekanbaru</p>
+            </div>
+          </div>
+          <div id="photoPreview" class="hidden">
+            <div class="bg-black/30 p-3 rounded-lg border border-white/10">
+              <div class="watermark-container">
+                <img id="previewImage" src="" class="max-w-full rounded-lg mb-2">
+                <div class="watermark">
+                  <img src="logo/watermark.png" alt="Menfess Sumatra" onerror="this.style.display='none'">
+                </div>
+              </div>
+              <p id="previewCaption" class="text-white/90 mt-2"></p>
+              <p class="text-pink-400 text-sm mt-1">#pekanbaru</p>
+            </div>
+          </div>
         </div>
 
         <!-- Tombol kirim -->
-        <button type="submit" class="btn-neon rounded-full px-5 py-2.5 bg-pink-500 font-semibold hover:scale-[1.02] active:scale-95 transition">
-          Kirim Menfess
+        <button type="submit" class="w-full btn-neon rounded-full px-5 py-3.5 bg-gradient-to-r from-pink-500 to-purple-600 font-bold hover:scale-[1.02] active:scale-95 transition flex items-center justify-center gap-2 text-lg">
+          🚀 Kirim Menfess
         </button>
-        <p id="status" class="text-sm text-white/70"></p>
+        <p id="status" class="text-center mt-4 text-sm text-white/70"></p>
       </form>
+
+      <!-- Info Channel Telegram -->
+      <div class="glass rounded-2xl p-6 border border-white/10 mt-6 text-center">
+        <div class="flex items-center justify-center gap-3 mb-3">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" class="text-blue-400">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.78 5.42-.9 6.8-.06.67-.36.89-.89.56-2.45-1.83-3.57-2.98-5.79-4.78-.51-.41-.87-.62-.85-1.01.03-.39.46-.56.99-.41 1.78.69 4.45 2.07 5.73 2.91.54.32.92.15 1.05-.49.26-1.28.78-4.11.89-5.28.06-.57-.17-.83-.74-.83-.28 0-1.17.22-3.28.65-.48.1-.91.15-1.03.14-.25-.02-.73-.14-.73-.14s-.39-.12-.54.23c-.15.35-.53.35-.69.38-.18.03-.47.06-.72.09-.63.08-1.09.07-1.15.07.23-.33.56-.78.9-1.1 2.02-1.89 4.35-2.83 6.78-2.83.75 0 1.33.17 1.59.25.67.21.73.67.67 1.5z"/>
+          </svg>
+          <h3 class="font-bold text-lg">Join Channel Telegram</h3>
+        </div>
+        <p class="text-white/80 mb-4">Pantau menfess-menfess terbaru di channel kami</p>
+        <a href="https://t.me/menfesssumatra" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 rounded-full font-semibold transition">
+          @menfesssumatra
+        </a>
+      </div>
     </div>
   </section>
+
+  <!-- Success Popup -->
+  <div id="successPopup" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/70 backdrop-blur-sm">
+    <div class="glass rounded-3xl p-8 mx-4 max-w-md w-full text-center success-popup border-2 border-green-400/50">
+      <div class="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-r from-green-400 to-teal-500 flex items-center justify-center">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="white">
+          <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+        </svg>
+      </div>
+      <h3 class="text-2xl font-bold mb-2">Yeay! Menfess Terkirim! 🎉</h3>
+      <p class="text-white/80 mb-2">Menfess kamu sudah berhasil dikirim!</p>
+      <p class="text-sm text-white/60 mb-6">Cek di <strong>@menfesssumatra</strong></p>
+      <div class="flex gap-3 justify-center">
+        <button onclick="closeSuccessPopup()" class="px-4 py-2 bg-pink-500 hover:bg-pink-600 rounded-full font-semibold transition">
+          Kirim Lagi
+        </button>
+        <a href="https://t.me/menfesssumatra" target="_blank" class="px-4 py-2 border border-white/20 hover:border-green-400 hover:text-green-400 rounded-full transition">
+          Cek disini
+        </a>
+      </div>
+    </div>
+  </div>
 
   <!-- Footer -->
   <footer class="mt-10 border-t border-white/10">
@@ -96,21 +238,140 @@
   <script>
     document.getElementById('year').textContent = new Date().getFullYear();
 
+    // API URL - Ganti dengan URL Vercel kamu
+    const API_URL = 'api/send-to-telegram';
+
+    // Toggle form type
     const typeSelect = document.getElementById("type");
     const textInput = document.getElementById("textInput");
     const photoInput = document.getElementById("photoInput");
+    const menfessText = document.getElementById("menfessText");
+    const menfessCaption = document.getElementById("menfessCaption");
+    const charCount = document.getElementById("charCount");
+    const previewSection = document.getElementById("previewSection");
+    const textPreview = document.getElementById("textPreview");
+    const photoPreview = document.getElementById("photoPreview");
 
     typeSelect.addEventListener("change", function () {
       if (this.value === "photo") {
         textInput.classList.add("hidden");
         photoInput.classList.remove("hidden");
+        updatePreview();
       } else {
         textInput.classList.remove("hidden");
         photoInput.classList.add("hidden");
+        updatePreview();
       }
     });
 
-    // Fungsi untuk cek limit kirim 2x/hari
+    // Character counter (380 karena nanti ditambah #pekanbaru = ~20 char)
+    menfessText.addEventListener("input", function() {
+      charCount.textContent = `${this.value.length}/380`;
+      if (this.value.length > 380) {
+        charCount.classList.add("text-red-400");
+      } else {
+        charCount.classList.remove("text-red-400");
+      }
+      updatePreview();
+    });
+
+    menfessCaption.addEventListener("input", updatePreview);
+
+    // Update preview
+    function updatePreview() {
+      const type = typeSelect.value;
+      
+      if (type === "text") {
+        const text = menfessText.value.trim();
+        if (text) {
+          previewSection.classList.remove("hidden");
+          textPreview.classList.remove("hidden");
+          photoPreview.classList.add("hidden");
+          document.getElementById("previewText").textContent = text;
+        } else {
+          previewSection.classList.add("hidden");
+        }
+      } else {
+        const caption = menfessCaption.value.trim();
+        const hasImage = document.getElementById("menfessImage").files.length > 0;
+        
+        if (caption || hasImage) {
+          previewSection.classList.remove("hidden");
+          textPreview.classList.add("hidden");
+          photoPreview.classList.remove("hidden");
+          
+          if (caption) {
+            document.getElementById("previewCaption").textContent = caption;
+          } else {
+            document.getElementById("previewCaption").textContent = "";
+          }
+        } else {
+          previewSection.classList.add("hidden");
+        }
+      }
+    }
+
+    // Image preview dengan watermark
+    document.getElementById("menfessImage").addEventListener("change", function(e) {
+      const preview = document.getElementById("imagePreview");
+      preview.innerHTML = "";
+      preview.classList.add("hidden");
+
+      if (this.files && this.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          preview.innerHTML = `
+            <div class="watermark-container">
+              <img src="${e.target.result}" class="max-w-full rounded-lg border-2 border-pink-400/50">
+              <div class="watermark">
+                <img src="logo/watermark.png" alt="Menfess Sumatra" onerror="this.style.display='none'">
+              </div>
+              <button type="button" onclick="removeImage()" class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs">×</button>
+            </div>
+          `;
+          preview.classList.remove("hidden");
+          
+          // Update preview image
+          document.getElementById("previewImage").src = e.target.result;
+          updatePreview();
+        }
+        reader.readAsDataURL(this.files[0]);
+      }
+    });
+
+    function removeImage() {
+      document.getElementById("menfessImage").value = "";
+      document.getElementById("imagePreview").innerHTML = "";
+      document.getElementById("imagePreview").classList.add("hidden");
+      document.getElementById("previewImage").src = "";
+      updatePreview();
+    }
+
+    // Confetti effect
+    function createConfetti() {
+      const colors = ['#ff3ea5', '#3ff3ff', '#8a2be2', '#ffe600', '#ff7e5f'];
+      for (let i = 0; i < 50; i++) {
+        const confetti = document.createElement('div');
+        confetti.className = 'confetti';
+        confetti.style.left = Math.random() * 100 + 'vw';
+        confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+        confetti.style.animation = `confetti-fall ${Math.random() * 3 + 2}s linear forwards`;
+        document.body.appendChild(confetti);
+        
+        setTimeout(() => confetti.remove(), 5000);
+      }
+    }
+
+    function showSuccessPopup() {
+      document.getElementById('successPopup').classList.remove('hidden');
+      createConfetti();
+    }
+
+    function closeSuccessPopup() {
+      document.getElementById('successPopup').classList.add('hidden');
+    }
+
+    // Limit checker
     function canSendMenfess() {
       const today = new Date().toLocaleDateString();
       const record = JSON.parse(localStorage.getItem("menfessRecord")) || { date: null, count: 0 };
@@ -132,47 +393,33 @@
       localStorage.setItem("menfessRecord", JSON.stringify(record));
     }
 
-    // Kirim ke Replit backend
+    // Kirim ke Telegram via API Vercel
     document.getElementById("menfessForm").addEventListener("submit", async (e) => {
       e.preventDefault();
       const status = document.getElementById("status");
       
       if (!canSendMenfess()) {
-        status.textContent = "⚠️ Kamu sudah mengirim 2 menfess hari ini. Coba lagi besok!";
+        status.textContent = "❌ Kamu sudah mengirim 2 menfess hari ini. Coba lagi besok!";
+        status.className = "text-center mt-4 text-sm text-red-400";
         return;
       }
 
-      status.textContent = "Mengirim...";
+      status.textContent = "⏳ Mengirim menfess ke Telegram...";
+      status.className = "text-center mt-4 text-sm text-yellow-400";
+
+      const type = typeSelect.value;
       const formData = new FormData();
-      const type = document.getElementById("type").value;
 
-      if (type === "photo") {
-        formData.append("text", document.getElementById("menfessCaption").value);
-        const imageFile = document.getElementById("menfessImage").files[0];
-        if (imageFile) formData.append("image", imageFile);
+      // Auto tambah hashtag #pekanbaru
+      if (type === "text") {
+        const text = `${menfessText.value}\n\n#pekanbaru`;
+        formData.append('text', text);
+        formData.append('type', 'text');
       } else {
-        formData.append("text", document.getElementById("menfessText").value);
-      }
-
-      try {
-        const res = await fetch("https://0143f322-4047-4a90-8f12-a76dba3bb0b9-00-3ra3z2b4z6agp.sisko.replit.dev/api/postToTwitter", {
-          method: "POST",
-          body: formData,
-        });
-
-        const data = await res.json();
-        if (data.success) {
-          incrementMenfessCount();
-          status.textContent = "✅ Menfess berhasil dikirim ke akun X!";
-          e.target.reset();
-        } else {
-          status.textContent = "❌ Gagal mengirim: " + (data.error || "Terjadi kesalahan");
-        }
-      } catch (err) {
-        console.error(err);
-        status.textContent = "⚠️ Gagal terhubung ke server.";
-      }
-    });
-  </script>
-</body>
-            </html>
+        const caption = menfessCaption.value ? `${menfessCaption.value}\n\n#pekanbaru` : '#pekanbaru';
+        formData.append('text', caption);
+        formData.append('type', 'photo');
+        
+        const imageFile = document.getElementById("menfessImage").files[0];
+        if (imageFile) {
+ 
