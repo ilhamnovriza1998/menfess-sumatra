@@ -238,8 +238,8 @@
   <script>
     document.getElementById('year').textContent = new Date().getFullYear();
 
-    // API URL - Ganti dengan URL Vercel kamu
-    const API_URL = 'api/send-to-telegram';
+    // API URL - Ganti dengan URL Vercel kamu yang sebenarnya
+    const API_URL = 'https://your-app.vercel.app/api/send-to-telegram';
 
     // Toggle form type
     const typeSelect = document.getElementById("type");
@@ -393,10 +393,56 @@
       localStorage.setItem("menfessRecord", JSON.stringify(record));
     }
 
-    // Kirim ke Telegram via API Vercel
+    // Function untuk kirim ke Telegram
+    async function sendToTelegram(formData, status, submitBtn, form) {
+      try {
+        console.log('🔄 Mengirim ke API...');
+        
+        const response = await fetch(API_URL, {
+          method: 'POST',
+          body: formData
+        });
+
+        const result = await response.json();
+        console.log('📨 Response dari API:', result);
+
+        if (result.success) {
+          incrementMenfessCount();
+          showSuccessPopup();
+          status.textContent = "";
+          form.reset();
+          document.getElementById("imagePreview").innerHTML = "";
+          document.getElementById("imagePreview").classList.add("hidden");
+          charCount.textContent = "0/380";
+          previewSection.classList.add("hidden");
+          
+          console.log('✅ Menfess berhasil dikirim!');
+        } else {
+          status.textContent = `❌ ${result.error || 'Terjadi kesalahan'}`;
+          status.className = "text-center mt-4 text-sm text-red-400";
+          
+          console.error('❌ Error details:', result);
+          
+          // Tampilkan pesan error lebih spesifik
+          if (result.error && result.error.includes('tidak memiliki akses')) {
+            status.innerHTML = `❌ ${result.error}<br><small>Pastikan bot sudah jadi admin di channel</small>`;
+          }
+        }
+      } catch (error) {
+        console.error('🚨 Network error:', error);
+        status.textContent = "❌ Gagal terhubung ke server. Cek koneksi internet dan pastikan API_URL benar.";
+        status.className = "text-center mt-4 text-sm text-red-400";
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = "🚀 Kirim Menfess";
+      }
+    }
+
+    // Kirim ke Telegram via API Vercel - YANG INI YANG DIPERBAIKI
     document.getElementById("menfessForm").addEventListener("submit", async (e) => {
       e.preventDefault();
       const status = document.getElementById("status");
+      const submitBtn = e.target.querySelector('button[type="submit"]');
       
       if (!canSendMenfess()) {
         status.textContent = "❌ Kamu sudah mengirim 2 menfess hari ini. Coba lagi besok!";
@@ -404,6 +450,10 @@
         return;
       }
 
+      // Disable button selama proses
+      submitBtn.disabled = true;
+      submitBtn.textContent = "⏳ Mengirim...";
+      
       status.textContent = "⏳ Mengirim menfess ke Telegram...";
       status.className = "text-center mt-4 text-sm text-yellow-400";
 
@@ -422,4 +472,13 @@
         
         const imageFile = document.getElementById("menfessImage").files[0];
         if (imageFile) {
- 
+          formData.append('image', imageFile);
+        }
+      }
+
+      // Panggil function untuk kirim
+      await sendToTelegram(formData, status, submitBtn, e.target);
+    });
+  </script>
+</body>
+</html>
