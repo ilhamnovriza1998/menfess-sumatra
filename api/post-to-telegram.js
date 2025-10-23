@@ -28,6 +28,7 @@ export default async function handler(req, res) {
     });
   }
 
+  // --- Mulai Blok Try/Catch ---
   try {
     // 🧩 Ambil token & channel dari environment Vercel
     const botToken = process.env.TELEGRAM_BOT_TOKEN;
@@ -58,33 +59,61 @@ export default async function handler(req, res) {
     // 🧾 Ambil data teks & tipe kiriman
     const text = fields.text?.toString() || "";
     const type = fields.type?.toString() || "text";
-    const imageFile = files.image?.[0];
 
-    if (!text.trim()) {
+    // Perbaikan: Pastikan pengambilan file image sesuai struktur formidable
+    const imageFile = files.image?.[0]; 
+
+    if (!text.trim() && type !== "photo") {
       return res
         .status(400)
-        .json({ success: false, error: "Teks tidak boleh kosong." });
+        .json({ success: false, error: "Teks menfess tidak boleh kosong." });
     }
 
     let result;
-
+    
     // 🖼️ Jika ada file foto, kirim sebagai foto + caption
     if (type === "photo" && imageFile) {
-      const filePath = imageFile.filepath || imageFile.file;
-      if (!fs.existsSync(filePath)) {
-        throw new Error("File gambar tidak ditemukan atau gagal diupload.");
+      // Ambil jalur file sementara
+      const filePath = imageFile.filepath; 
+
+      if (!filePath || !fs.existsSync(filePath)) {
+        // Jika file tidak ada, ini mungkin akibat user menekan kirim tanpa memilih file (meski sudah divalidasi di frontend)
+        return res.status(400).json({ success: false, error: "Tidak ada file foto yang terdeteksi." });
       }
 
-      const fileBuffer = fs.readFileSync(filePath);
+      let fileBuffer;
+      try {
+        // Ambil isi file sebagai Buffer
+        fileBuffer = fs.readFileSync(filePath);
+      } catch (readError) {
+        console.error("Gagal membaca file sementara:", readError);
+        throw new Error("Gagal memproses file foto.");
+      }
+      
+      try {
+        // KIRIM FOTO KE TELEGRAM
+        result = await bot.telegram.sendPhoto(
+          channelTarget,
+          { 
+            source: fileBuffer,
+            filename: imageFile.originalFilename || 'photo.jpg' // Tambah nama file untuk Telegraf
+          },
+          {
+            caption: text,
+            parse_mode: "HTML",
+          }
+        );
+      } finally {
+        // PENTING: Hapus file sementara di Vercel setelah berhasil atau gagal dikirim
+        fs.unlink(filePath, (err) => {
+          if (err) {
+            console.error(`⚠️ Gagal menghapus file sementara: ${filePath}`, err);
+          } else {
+            console.log(`🗑️ File sementara berhasil dihapus: ${filePath}`);
+          }
+        });
+      }
 
-      result = await bot.telegram.sendPhoto(
-        channelTarget,
-        { source: fileBuffer },
-        {
-          caption: text,
-          parse_mode: "HTML",
-        }
-      );
     } else {
       // 💬 Kirim teks biasa
       result = await bot.telegram.sendMessage(channelTarget, text, {
@@ -98,13 +127,18 @@ export default async function handler(req, res) {
       message: "✅ Menfess berhasil dikirim ke Telegram!",
       messageId: result.message_id || null,
     });
+
+  // --- Akhir Blok Try/Catch ---
   } catch (error) {
     console.error("❌ Error Telegram:", error);
+    // Tambahkan error handling yang lebih spesifik untuk token/channel
+    const displayError = error.message.includes("400") || error.message.includes("404") || error.message.includes("403")
+      ? "Gagal mengirim. Pastikan token bot dan ID channel sudah benar (dan bot adalah admin)."
+      : error.message;
+
     return res.status(500).json({
       success: false,
-      error:
-        error.message ||
-        "Terjadi kesalahan tidak dikenal saat mengirim ke Telegram.",
+      error: displayError || "Terjadi kesalahan tidak dikenal saat mengirim ke Telegram.",
     });
   }
-        }
+                                     }
