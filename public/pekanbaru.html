@@ -398,10 +398,24 @@
       try {
         console.log('🔄 Mengirim ke API...');
         
+        // lakukan fetch dan cek status HTTP dahulu
         const response = await fetch(API_URL, {
           method: 'POST',
-          body: formData
+          body: formData,
+          mode: 'cors'
         });
+
+        if (!response.ok) {
+          // coba parse body jika ada
+          let errText = `HTTP ${response.status}`;
+          try {
+            const errJson = await response.json();
+            errText = errJson.error || JSON.stringify(errJson);
+          } catch (e) {
+            // ignore parse error
+          }
+          throw new Error(errText);
+        }
 
         const result = await response.json();
         console.log('📨 Response dari API:', result);
@@ -430,11 +444,15 @@
         }
       } catch (error) {
         console.error('🚨 Network error:', error);
-        status.textContent = "❌ Gagal terhubung ke server. Cek koneksi internet dan pastikan API_URL benar.";
-        status.className = "text-center mt-4 text-sm text-red-400";
+        // tampilkan pesan yang lebih ramah
+        document.getElementById("status").textContent = `❌ ${error.message || 'Gagal terhubung ke server. Cek koneksi internet dan pastikan API_URL benar.'}`;
+        document.getElementById("status").className = "text-center mt-4 text-sm text-red-400";
       } finally {
-        submitBtn.disabled = false;
-        submitBtn.innerHTML = "🚀 Kirim Menfess";
+        // pastikan tombol kembali ke kondisi semula
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = '🚀 Kirim Menfess';
+        }
       }
     }
 
@@ -452,7 +470,7 @@
 
       // Disable button selama proses
       submitBtn.disabled = true;
-      submitBtn.textContent = "⏳ Mengirim...";
+      submitBtn.innerHTML = "⏳ Mengirim...";
       
       status.textContent = "⏳ Mengirim menfess ke Telegram...";
       status.className = "text-center mt-4 text-sm text-yellow-400";
@@ -473,6 +491,13 @@
         const imageFile = document.getElementById("menfessImage").files[0];
         if (imageFile) {
           formData.append('image', imageFile);
+        } else {
+          // jika user pilih mode foto tapi belum pilih gambar -> beritahu dan batalkan
+          status.textContent = "⚠️ Pilih foto terlebih dahulu sebelum mengirim.";
+          status.className = "text-center mt-4 text-sm text-red-400";
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = "🚀 Kirim Menfess";
+          return;
         }
       }
 
