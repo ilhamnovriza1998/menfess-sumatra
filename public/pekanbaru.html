@@ -89,7 +89,7 @@
             <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
               <path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/>
             </svg>
-            Auto hashtag #pekanbaru
+            Auto hashtag #pku
           </div>
           <div class="inline-flex items-center gap-2 px-3 py-1 bg-blue-500/20 border border-blue-400/30 rounded-full text-blue-300 text-sm">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
@@ -118,7 +118,7 @@
           <div class="relative">
             <textarea id="menfessText" name="text" rows="4" class="p-3 bg-white/5 border border-white/20 rounded-lg focus:outline-none focus:border-pink-400 transition w-full" placeholder="Tulis menfess kamu di sini... ✨"></textarea>
             <div class="absolute bottom-3 right-3 text-xs text-white/40">
-              #pekanbaru
+              #pku
             </div>
           </div>
           <div class="text-xs text-white/60 flex justify-between">
@@ -146,7 +146,7 @@
           <div class="relative">
             <textarea id="menfessCaption" name="caption" rows="2" class="p-3 bg-white/5 border border-white/20 rounded-lg focus:outline-none focus:border-pink-400 transition w-full" placeholder="Tuliskan caption untuk foto..."></textarea>
             <div class="absolute bottom-3 right-3 text-xs text-white/40">
-              #pekanbaru
+              #pku
             </div>
           </div>
           <div class="text-xs text-white/60">
@@ -159,7 +159,7 @@
           <div id="textPreview" class="hidden">
             <div class="bg-black/30 p-3 rounded-lg border border-white/10">
               <p id="previewText" class="text-white/90"></p>
-              <p class="text-pink-400 text-sm mt-1">#pekanbaru</p>
+              <p class="text-pink-400 text-sm mt-1">#pku</p>
             </div>
           </div>
           <div id="photoPreview" class="hidden">
@@ -266,7 +266,7 @@
       }
     });
 
-    // Character counter (380 karena nanti ditambah #pekanbaru = ~20 char)
+    // Character counter (380 karena nanti ditambah #pku = ~20 char)
     menfessText.addEventListener("input", function() {
       charCount.textContent = `${this.value.length}/380`;
       if (this.value.length > 380) {
@@ -493,12 +493,12 @@
            return;
         }
 
-        const text = `${textValue}\n\n#pekanbaru`;
+        const text = `${textValue}\n#pku`;
         formData.append('text', text);
         formData.append('type', 'text');
         
       } else { // Mode Photo
-        const caption = menfessCaption.value ? `${menfessCaption.value}\n\n#pekanbaru` : '#pekanbaru';
+        const caption = menfessCaption.value ? `${menfessCaption.value}\n#pku` : '#pku';
         formData.append('text', caption);
         formData.append('type', 'photo');
         
