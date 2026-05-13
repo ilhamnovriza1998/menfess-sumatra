@@ -1,3 +1,9 @@
+export const config = {
+  api: {
+    bodyParser: true,
+  },
+};
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({
@@ -19,14 +25,14 @@ export default async function handler(req, res) {
     const data = {
       method: 'QRIS',
       merchant_ref: merchantRef,
-      amount: 2000,
+      amount: 5000,
       customer_name: 'Anonymous',
       customer_email: 'anon@menfess.com',
       order_items: [
         {
           sku: 'MENFESS01',
           name: 'Kirim Menfess',
-          price: 2000,
+          price: 5000,
           quantity: 1
         }
       ],
@@ -51,6 +57,11 @@ export default async function handler(req, res) {
     data.signature = signature;
 
     // Request ke Tripay Sandbox
+
+    console.log(process.env.TRIPAY_API_KEY);
+console.log(process.env.TRIPAY_PRIVATE_KEY);
+console.log(process.env.TRIPAY_MERCHANT_CODE);
+    
     const tripayResponse = await fetch(
       'https://tripay.co.id/api-sandbox/transaction/create',
       {
