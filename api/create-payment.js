@@ -148,3 +148,5 @@ return res.status(200).json({
   }
 
 }
+
+console.log('API KEY:', process.env.TRIPAY_API_KEY);
