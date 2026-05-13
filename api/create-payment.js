@@ -98,15 +98,43 @@ export default async function handler(req, res) {
       tripayResponse.status
     );
 
-    const text =
-      await tripayResponse.text();
+    const tripayResult =
+  await tripayResponse.json();
 
-    console.log('TRIPAY RAW:', text);
+console.log(
+  'TRIPAY RESULT:',
+  JSON.stringify(tripayResult, null, 2)
+);
 
-    return res.status(200).json({
-      success: true,
-      raw: text
-    });
+if (!tripayResult.success) {
+
+  return res.status(400).json({
+    success: false,
+    error:
+      tripayResult.message ||
+      'Tripay gagal'
+  });
+
+}
+
+return res.status(200).json({
+
+  success: true,
+
+  data: {
+
+    reference:
+      tripayResult.data.reference,
+
+    qr_string:
+      tripayResult.data.qr_string,
+
+    amount:
+      tripayResult.data.amount
+
+  }
+
+});
 
   } catch (error) {
 
