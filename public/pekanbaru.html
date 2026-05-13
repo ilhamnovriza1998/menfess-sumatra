@@ -46,6 +46,38 @@
   </style>
 </head>
 
+  <div id="qrisPopup"
+     class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/80 backdrop-blur-sm">
+
+  <div class="glass rounded-3xl p-6 max-w-sm w-full mx-4 text-center border border-white/10">
+
+    <h3 class="text-2xl font-bold mb-2">
+      Scan QRIS 💸
+    </h3>
+
+    <p class="text-white/70 text-sm mb-4">
+      Selesaikan pembayaran untuk mengirim menfess
+    </p>
+
+    <img id="qrisImage"
+         src=""
+         class="w-64 h-64 mx-auto rounded-xl bg-white p-2">
+
+    <div class="mt-4">
+      <p class="text-white/60 text-sm">Total</p>
+      <p id="qrisAmount"
+         class="text-3xl font-extrabold text-pink-400">
+      </p>
+    </div>
+
+    <div id="paymentStatus"
+         class="mt-4 text-sm text-yellow-400">
+      ⏳ Menunggu pembayaran...
+    </div>
+
+  </div>
+</div>
+
 <body class="text-white selection:bg-pink-500/30">
 
   <header class="sticky top-0 z-40 backdrop-blur border-b border-white/10 bg-black/30">
@@ -395,6 +427,143 @@
       localStorage.setItem("menfessRecord", JSON.stringify(record));
     }
 
+    // Function Pop Up Pembayaran
+    function showQRISPopup(payment) {
+
+  document
+    .getElementById('qrisPopup')
+    .classList
+    .remove('hidden');
+
+  document
+    .getElementById('qrisImage')
+    .src = payment.qr_url;
+
+  document
+    .getElementById('qrisAmount')
+    .textContent =
+      'Rp ' + payment.amount.toLocaleString('id-ID');
+}
+
+    async function createPayment(formData, status, submitBtn, form) {
+
+  try {
+
+    status.textContent = "⏳ Membuat QRIS...";
+    status.className = "text-center mt-4 text-sm text-yellow-400";
+
+    const response = await fetch('/api/create-payment', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+
+      body: JSON.stringify({
+        text: formData.get('text'),
+        type: formData.get('type')
+      })
+    });
+
+    const result = await response.json();
+
+    console.log(result);
+
+    if (!result.success) {
+
+      status.textContent = "❌ " + result.error;
+      status.className = "text-center mt-4 text-sm text-red-400";
+
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = '🚀 Kirim Menfess';
+
+      return;
+    }
+
+    const payment = result.data;
+
+    // TAMPILKAN QRIS
+    showQRISPopup(payment);
+
+    // CEK STATUS PEMBAYARAN
+    checkPaymentStatus(
+      payment.reference,
+      formData,
+      status,
+      submitBtn,
+      form
+    );
+
+  } catch (error) {
+
+    console.error(error);
+
+    status.textContent = "❌ Gagal membuat pembayaran";
+    status.className = "text-center mt-4 text-sm text-red-400";
+
+    submitBtn.disabled = false;
+    submitBtn.innerHTML = '🚀 Kirim Menfess';
+  }
+}
+
+    async function checkPaymentStatus(
+  reference,
+  formData,
+  status,
+  submitBtn,
+  form
+) {
+
+  const interval = setInterval(async () => {
+
+    try {
+
+      const response = await fetch(
+        '/api/check-payment?reference=' + reference
+      );
+
+      const result = await response.json();
+
+      console.log(result);
+
+      if (
+        result.success &&
+        result.paid
+      ) {
+
+        clearInterval(interval);
+
+        document
+          .getElementById('paymentStatus')
+          .innerHTML =
+            '✅ Pembayaran berhasil';
+
+        // KIRIM MENFESS
+        await sendToTelegram(
+          formData,
+          status,
+          submitBtn,
+          form
+        );
+
+        setTimeout(() => {
+
+          document
+            .getElementById('qrisPopup')
+            .classList
+            .add('hidden');
+
+        }, 1500);
+      }
+
+    } catch (error) {
+
+      console.log(error);
+
+    }
+
+  }, 5000);
+}
+
     // Function untuk kirim ke Telegram
     async function sendToTelegram(formData, status, submitBtn, form) {
       try {
@@ -516,8 +685,8 @@
         formData.append('image', imageFile);
       }
 
-      // 4. Panggil function untuk kirim
-      await sendToTelegram(formData, status, submitBtn, e.target);
+      // 4. Panggil function pembayaran
+      await createPayment(formData, status, submitBtn, e.target);
     });
 
     // HAPUS KODE BERIKUT (EVENT LISTENER DUPLIKAT)
