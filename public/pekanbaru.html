@@ -437,7 +437,9 @@
 
   document
     .getElementById('qrisImage')
-    .src = payment.qr_url;
+    .src =
+'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=' +
+encodeURIComponent(payment.qr_string);
 
   document
     .getElementById('qrisAmount')
