@@ -13,6 +13,11 @@ export default async function handler(req, res) {
   }
 
   try {
+    console.log('BODY:', req.body);
+
+console.log('API:', process.env.TRIPAY_API_KEY);
+console.log('PRIVATE:', process.env.TRIPAY_PRIVATE_KEY);
+console.log('MERCHANT:', process.env.TRIPAY_MERCHANT_CODE);
     const {
       text,
       type
