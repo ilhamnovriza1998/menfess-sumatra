@@ -1,3 +1,5 @@
+import crypto from 'crypto';
+
 export default async function handler(req, res) {
 
   if (req.method !== 'POST') {
@@ -11,12 +13,16 @@ export default async function handler(req, res) {
 
     console.log('BODY:', req.body);
 
+    console.log({
+      API_KEY: process.env.TRIPAY_API_KEY,
+      PRIVATE_KEY: process.env.TRIPAY_PRIVATE_KEY,
+      MERCHANT_CODE: process.env.TRIPAY_MERCHANT_CODE
+    });
+
     const merchantRef =
       'MENFESS-' + Date.now();
 
     const amount = 5000;
-
-    const crypto = await import('crypto');
 
     const signature = crypto
       .createHmac(
@@ -32,9 +38,13 @@ export default async function handler(req, res) {
 
     const data = {
       method: 'QRIS',
+
       merchant_ref: merchantRef,
+
       amount: amount,
+
       customer_name: 'Anonymous',
+
       customer_email: 'anon@menfess.com',
 
       order_items: [
@@ -57,6 +67,8 @@ export default async function handler(req, res) {
 
       signature: signature
     };
+
+    console.log('REQUEST:', data);
 
     const tripayResponse = await fetch(
       'https://tripay.co.id/api-sandbox/transaction/create',
@@ -93,7 +105,9 @@ export default async function handler(req, res) {
 
     return res.status(200).json({
       success: true,
+
       data: {
+
         reference:
           tripayResult.data.reference,
 
@@ -102,12 +116,13 @@ export default async function handler(req, res) {
 
         amount:
           tripayResult.data.amount
+
       }
     });
 
   } catch (error) {
 
-    console.error('ERROR:', error);
+    console.error('ERROR FULL:', error);
 
     return res.status(500).json({
       success: false,
