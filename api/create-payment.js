@@ -11,35 +11,22 @@ export default async function handler(req, res) {
 
   try {
 
-    console.log('=== START CREATE PAYMENT ===');
-
-    console.log('ENV CHECK:', {
-      API_KEY: !!process.env.TRIPAY_API_KEY,
-      PRIVATE_KEY: !!process.env.TRIPAY_PRIVATE_KEY,
-      MERCHANT_CODE: !!process.env.TRIPAY_MERCHANT_CODE
-    });
-
     const merchantRef =
       'MENFESS-' + Date.now();
 
     const amount = 5000;
-
-    const rawSignature =
-      process.env.TRIPAY_MERCHANT_CODE +
-      merchantRef +
-      amount;
-
-    console.log('RAW SIGNATURE:', rawSignature);
 
     const signature = crypto
       .createHmac(
         'sha256',
         process.env.TRIPAY_PRIVATE_KEY
       )
-      .update(rawSignature)
+      .update(
+        process.env.TRIPAY_MERCHANT_CODE +
+        merchantRef +
+        amount
+      )
       .digest('hex');
-
-    console.log('SIGNATURE:', signature);
 
     const payload = {
 
@@ -74,16 +61,14 @@ export default async function handler(req, res) {
       signature: signature
     };
 
-    console.log('PAYLOAD:', payload);
-
     const tripayResponse = await fetch(
       'https://tripay.co.id/api-sandbox/transaction/create',
       {
         method: 'POST',
 
         headers: {
-          Authorization:
-            `Bearer ${process.env.TRIPAY_API_KEY}`,
+          'Authorization':
+            'Bearer ' + process.env.TRIPAY_API_KEY,
 
           'Content-Type':
             'application/json'
@@ -93,60 +78,44 @@ export default async function handler(req, res) {
       }
     );
 
-    console.log(
-      'TRIPAY STATUS:',
-      tripayResponse.status
-    );
-
     const tripayResult =
-  await tripayResponse.json();
+      await tripayResponse.json();
 
-console.log(
-  'TRIPAY RESULT:',
-  JSON.stringify(tripayResult, null, 2)
-);
+    console.log(tripayResult);
 
-if (!tripayResult.success) {
+    if (!tripayResult.success) {
 
-  return res.status(400).json({
-    success: false,
-    error:
-      tripayResult.message ||
-      'Tripay gagal'
-  });
+      return res.status(400).json({
+        success: false,
+        error: tripayResult.message
+      });
 
-}
+    }
 
-return res.status(200).json({
+    return res.status(200).json({
+      success: true,
 
-  success: true,
+      data: {
+        reference:
+          tripayResult.data.reference,
 
-  data: {
+        qr_url:
+          tripayResult.data.qr_url,
 
-    reference:
-      tripayResult.data.reference,
-
-    qr_string:
-      tripayResult.data.qr_string,
-
-    amount:
-      tripayResult.data.amount
-
-  }
-
-});
+        amount:
+          tripayResult.data.amount
+      }
+    });
 
   } catch (error) {
 
-    console.error('FULL ERROR:', error);
+    console.log(error);
 
     return res.status(500).json({
       success: false,
-      error: String(error)
+      error: error.message
     });
 
   }
 
 }
-
-console.log('API KEY:', process.env.TRIPAY_API_KEY);
