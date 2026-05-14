@@ -62,7 +62,7 @@ export default async function handler(req, res) {
     };
 
     const tripayResponse = await fetch(
-      'https://tripay.co.id/api-sandbox/transaction/create',
+      'https://tripay.co.id/api/transaction/create',
       {
         method: 'POST',
 
