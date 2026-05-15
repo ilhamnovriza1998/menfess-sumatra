@@ -1,10 +1,5 @@
+```js id="1cf7wk"
 import crypto from 'crypto';
-import axios from 'axios';
-import pkg from 'https-proxy-agent';
-
-const { HttpsProxyAgent } = pkg;
-```
-
 
 export default async function handler(req, res) {
 
@@ -67,27 +62,25 @@ export default async function handler(req, res) {
       signature: signature
     };
 
-    const proxyAgent = new HttpsProxyAgent(
-      process.env.PROXY_URL
-    );
-
-    const tripayResponse = await axios.post(
+    const tripayResponse = await fetch(
       'https://tripay.co.id/api/transaction/create',
-      payload,
       {
+        method: 'POST',
+
         headers: {
-          Authorization:
+          'Authorization':
             'Bearer ' + process.env.TRIPAY_API_KEY,
 
           'Content-Type':
             'application/json'
         },
 
-        httpsAgent: proxyAgent
+        body: JSON.stringify(payload)
       }
     );
 
-    const tripayResult = tripayResponse.data;
+    const tripayResult =
+      await tripayResponse.json();
 
     console.log(tripayResult);
 
@@ -121,9 +114,7 @@ export default async function handler(req, res) {
 
     return res.status(500).json({
       success: false,
-      error:
-        error.response?.data ||
-        error.message
+      error: error.message
     });
 
   }
