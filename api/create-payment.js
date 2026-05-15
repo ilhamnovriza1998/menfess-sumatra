@@ -16,23 +16,25 @@ export default async function handler(req, res) {
     const merchantRef = 'MENFESS-' + Date.now();
     const amount = 1000;
 
-    // 1. Simpan ke Supabase (Supaya pesan tidak hilang)
+    // 1. Simpan ke Supabase agar data tidak hilang saat callback
     await supabase.from('transactions').insert([
       { 
         merchant_ref: merchantRef, 
-        pesan: text || "", 
+        pesan: text || "Tanpa pesan", 
         foto_url: imageUrl || null, 
         status: 'UNPAID' 
       }
     ]);
 
-    // 2. Setup Jalur Fixie (Berdasarkan screenshot kamu)
+    // 2. Setup Fixie Proxy Agent
     const agent = new HttpsProxyAgent(process.env.FIXIE_URL);
 
+    // 3. Setup Tripay Credentials
     const mCode = process.env.TRIPAY_MERCHANT_CODE.trim();
     const pKey = process.env.TRIPAY_PRIVATE_KEY.trim();
     const apiKey = process.env.TRIPAY_API_KEY.trim();
 
+    // Buat Signature
     const signature = crypto.createHmac('sha256', pKey)
       .update(mCode + merchantRef + amount).digest('hex');
 
@@ -42,11 +44,19 @@ export default async function handler(req, res) {
       amount: amount,
       customer_name: 'Customer Menfess',
       customer_email: 'anon@menfess.com',
+      order_items: [
+        {
+          sku: 'MENFESS-01',
+          name: 'Kirim Menfess',
+          price: amount,
+          quantity: 1
+        }
+      ],
       callback_url: `https://${req.headers.host}/api/callback`,
       signature: signature
     };
 
-    // 3. Tembak Tripay LEWAT Fixie Agent
+    // 4. Kirim Request ke Tripay lewat Proxy
     const response = await axios.post('https://tripay.co.id/api/transaction/create', payload, {
       httpsAgent: agent,
       headers: { 'Authorization': `Bearer ${apiKey}` }
@@ -55,6 +65,9 @@ export default async function handler(req, res) {
     return res.status(200).json({ success: true, data: response.data.data });
   } catch (error) {
     console.error("Error Detail:", error.response?.data || error.message);
-    return res.status(500).json({ success: false, error: error.message });
+    return res.status(500).json({ 
+      success: false, 
+      message: error.response?.data?.message || error.message 
+    });
   }
 }
