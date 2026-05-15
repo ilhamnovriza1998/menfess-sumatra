@@ -1,8 +1,6 @@
 import crypto from 'crypto';
 import axios from 'axios';
-import pkg from 'https-proxy-agent';
-
-const { HttpsProxyAgent } = pkg;
+import { HttpsProxyAgent } from 'https-proxy-agent';
 
 export default async function handler(req, res) {
 
