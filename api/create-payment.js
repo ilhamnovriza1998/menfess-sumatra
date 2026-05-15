@@ -1,7 +1,7 @@
 ```js
 import crypto from 'crypto';
 import axios from 'axios';
-import { HttpsProxyAgent } from 'https-proxy-agent';
+import HttpsProxyAgent from 'https-proxy-agent';
 
 export default async function handler(req, res) {
 
