@@ -35,7 +35,7 @@ export default async function handler(req, res) {
       method: 'QRIS',
       merchant_ref: merchantRef,
       amount: amount,
-      customer_name: 'Anonymous',
+      customer_name: text.substring(0, 255),
       customer_email: 'anon@menfess.com',
       order_items: [
         {
