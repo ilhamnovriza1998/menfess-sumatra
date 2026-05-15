@@ -1,4 +1,8 @@
 import crypto from 'crypto';
+import axios from 'axios';
+import pkg from 'https-proxy-agent';
+
+const { HttpsProxyAgent } = pkg;
 
 export default async function handler(req, res) {
 
@@ -61,50 +65,31 @@ export default async function handler(req, res) {
       signature: signature
     };
 
-    const tripayResponse = await fetch(
-      'https://tripay.co.id/api/transaction/create',
-      {
-        method: 'POST',
+    const proxyAgent = new HttpsProxyAgent(
+      process.env.PROXY_URL
+    );
 
+    const tripayResponse = await axios.post(
+      'https://tripay.co.id/api/transaction/create',
+      payload,
+      {
         headers: {
-          'Authorization':
+          Authorization:
             'Bearer ' + process.env.TRIPAY_API_KEY,
 
           'Content-Type':
             'application/json'
         },
 
-        body: JSON.stringify(payload)
+        httpsAgent: proxyAgent
       }
     );
 
-    const tripayResult =
-      await tripayResponse.json();
-
-    console.log(tripayResult);
-
-    if (!tripayResult.success) {
-
-      return res.status(400).json({
-        success: false,
-        error: tripayResult.message
-      });
-
-    }
+    const tripayResult = tripayResponse.data;
 
     return res.status(200).json({
       success: true,
-
-      data: {
-        reference:
-          tripayResult.data.reference,
-
-        qr_url:
-          tripayResult.data.qr_url,
-
-        amount:
-          tripayResult.data.amount
-      }
+      data: tripayResult.data
     });
 
   } catch (error) {
@@ -113,10 +98,11 @@ export default async function handler(req, res) {
 
     return res.status(500).json({
       success: false,
-      error: error.message
+      error:
+        error.response?.data ||
+        error.message
     });
 
   }
 
 }
-```
