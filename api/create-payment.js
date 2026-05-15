@@ -23,7 +23,7 @@ export default async function handler(req, res) {
     }
 
     const merchantRef = 'MENFESS-' + Date.now();
-    const amount = 5000;
+    const amount = 1000;
 
     // Generate Signature
     const signature = crypto
