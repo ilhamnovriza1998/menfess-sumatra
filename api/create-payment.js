@@ -1,6 +1,5 @@
 import crypto from 'crypto';
 import axios from 'axios';
-import { HttpsProxyAgent } from 'https-proxy-agent';
 
 export default async function handler(req, res) {
 
@@ -63,9 +62,8 @@ export default async function handler(req, res) {
       signature: signature
     };
 
-    const proxyAgent = new HttpsProxyAgent(
-      process.env.PROXY_URL
-    );
+    // Parse proxy URL
+    const proxyUrl = new URL(process.env.PROXY_URL);
 
     const tripayResponse = await axios.post(
       'https://tripay.co.id/api/transaction/create',
@@ -79,7 +77,15 @@ export default async function handler(req, res) {
             'application/json'
         },
 
-        httpsAgent: proxyAgent
+        proxy: {
+          host: proxyUrl.hostname,
+          port: Number(proxyUrl.port),
+          protocol: 'http',
+          auth: {
+            username: proxyUrl.username,
+            password: proxyUrl.password
+          }
+        }
       }
     );
 
