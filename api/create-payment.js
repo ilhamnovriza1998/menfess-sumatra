@@ -1,7 +1,10 @@
-```js
-const crypto = require('crypto');
-const axios = require('axios');
-const { HttpsProxyAgent } = require('https-proxy-agent');
+import crypto from 'crypto';
+import axios from 'axios';
+import pkg from 'https-proxy-agent';
+
+const { HttpsProxyAgent } = pkg;
+```
+
 
 export default async function handler(req, res) {
 
