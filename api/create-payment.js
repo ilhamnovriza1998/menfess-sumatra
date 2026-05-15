@@ -1,22 +1,31 @@
 import crypto from 'crypto';
 import axios from 'axios';
-import { HttpsProxyAgent } from 'https-proxy-agent'; // Tambahkan ini
+import { HttpsProxyAgent } from 'https-proxy-agent';
 
 export default async function handler(req, res) {
+  // Hanya izinkan method POST
   if (req.method !== 'POST') {
-    return res.status(405).json({ success: false, error: 'Method tidak diizinkan' });
+    return res.status(405).json({ 
+      success: false, 
+      error: 'Method tidak diizinkan' 
+    });
   }
 
   try {
+    // Pastikan semua Environment Variables ada
+    const mCode = process.env.TRIPAY_MERCHANT_CODE?.trim();
+    const pKey = process.env.TRIPAY_PRIVATE_KEY?.trim();
+    const apiKey = process.env.TRIPAY_API_KEY?.trim();
+    const fixieUrl = process.env.FIXIE_URL || process.env.PROXY_URL;
+
+    if (!mCode || !pKey || !apiKey) {
+      throw new Error('Konfigurasi API Tripay belum lengkap di Environment Variables');
+    }
+
     const merchantRef = 'MENFESS-' + Date.now();
     const amount = 5000;
-    
-    // 1. Pastikan variabel env bersih dari spasi (trim)
-    const mCode = process.env.TRIPAY_MERCHANT_CODE.trim();
-    const pKey = process.env.TRIPAY_PRIVATE_KEY.trim();
-    const apiKey = process.env.TRIPAY_API_KEY.trim();
 
-    // 2. Hitung Signature dengan data yang bersih
+    // Generate Signature
     const signature = crypto
       .createHmac('sha256', pKey)
       .update(mCode + merchantRef + amount)
@@ -42,20 +51,22 @@ export default async function handler(req, res) {
       signature: signature
     };
 
-    // 3. Gunakan HttpsProxyAgent (Lebih stabil untuk Fixie di Vercel)
-    // Pastikan variabel di Vercel namanya FIXIE_URL (sesuai integrasi otomatis tadi)
-    const agent = new HttpsProxyAgent(process.env.FIXIE_URL || process.env.PROXY_URL);
+    // Inisialisasi Agent untuk Proxy Fixie
+    // proxy: false wajib ada agar Axios tidak menggunakan logic internal yang bug di Node 18+
+    const agent = fixieUrl ? new HttpsProxyAgent(fixieUrl) : null;
 
     const tripayResponse = await axios.post(
       'https://tripay.co.id/api/transaction/create',
       payload,
       {
-        httpsAgent: agent, // Pakai ini, bukan properti 'proxy'
-        proxy: false,      // Matikan proxy bawaan axios agar tidak bentrok
+        httpsAgent: agent,
+        proxy: false, 
         headers: {
-          'Authorization': 'Bearer ' + apiKey,
+          'Authorization': `Bearer ${apiKey}`,
           'Content-Type': 'application/json'
-        }
+        },
+        // Timeout agar fungsi tidak menggantung jika proxy lambat
+        timeout: 10000 
       }
     );
 
@@ -65,10 +76,12 @@ export default async function handler(req, res) {
     });
 
   } catch (error) {
+    // Log error lengkap di console Vercel untuk debugging
     console.error("Tripay Error Detail:", error.response?.data || error.message);
 
     return res.status(500).json({
       success: false,
+      message: 'Gagal memproses pembayaran',
       error: error.response?.data || error.message
     });
   }
