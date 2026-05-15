@@ -1,7 +1,7 @@
 ```js
-import crypto from 'crypto';
-import axios from 'axios';
-import HttpsProxyAgent from 'https-proxy-agent';
+const crypto = require('crypto');
+const axios = require('axios');
+const { HttpsProxyAgent } = require('https-proxy-agent');
 
 export default async function handler(req, res) {
 
@@ -64,7 +64,6 @@ export default async function handler(req, res) {
       signature: signature
     };
 
-    // Proxy Agent
     const proxyAgent = new HttpsProxyAgent(
       process.env.PROXY_URL
     );
