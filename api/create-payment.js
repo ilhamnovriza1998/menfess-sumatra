@@ -1,4 +1,7 @@
+```js
 import crypto from 'crypto';
+import axios from 'axios';
+import { HttpsProxyAgent } from 'https-proxy-agent';
 
 export default async function handler(req, res) {
 
@@ -61,25 +64,28 @@ export default async function handler(req, res) {
       signature: signature
     };
 
-    const tripayResponse = await fetch(
-      'https://tripay.co.id/api/transaction/create',
-      {
-        method: 'POST',
+    // Proxy Agent
+    const proxyAgent = new HttpsProxyAgent(
+      process.env.PROXY_URL
+    );
 
+    const tripayResponse = await axios.post(
+      'https://tripay.co.id/api/transaction/create',
+      payload,
+      {
         headers: {
-          'Authorization':
+          Authorization:
             'Bearer ' + process.env.TRIPAY_API_KEY,
 
           'Content-Type':
             'application/json'
         },
 
-        body: JSON.stringify(payload)
+        httpsAgent: proxyAgent
       }
     );
 
-    const tripayResult =
-      await tripayResponse.json();
+    const tripayResult = tripayResponse.data;
 
     console.log(tripayResult);
 
@@ -113,9 +119,12 @@ export default async function handler(req, res) {
 
     return res.status(500).json({
       success: false,
-      error: error.message
+      error:
+        error.response?.data ||
+        error.message
     });
 
   }
 
 }
+```
