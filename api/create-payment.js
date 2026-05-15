@@ -17,16 +17,6 @@ export default async function handler(req, res) {
 
     const amount = 5000;
 
-const signature = crypto
-  .createHmac(
-    'sha256',
-    process.env.TRIPAY_PRIVATE_KEY
-  )
-  .update(
-    `${process.env.TRIPAY_MERCHANT_CODE}${merchantRef}${amount}`
-  )
-  .digest('hex');
-
     const signature = crypto
       .createHmac(
         'sha256',
