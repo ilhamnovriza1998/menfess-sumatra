@@ -14,7 +14,7 @@ export default async function handler(req, res) {
   try {
     const { text, imageUrl } = req.body;
     const merchantRef = 'MENFESS-' + Date.now();
-    const amount = 1000;
+    const amount = 5000;
 
     // 1. Simpan ke Supabase agar data tidak hilang saat callback
     await supabase.from('transactions').insert([
