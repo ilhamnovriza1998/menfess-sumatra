@@ -1,2 +1,2 @@
 # menfess-sumatra
-kieim menfess anonim 
+kirim menfess anonim 
