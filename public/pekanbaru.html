@@ -544,12 +544,18 @@ async function checkPaymentStatus(
             '<span class="text-green-400 font-bold">✅ Pembayaran berhasil</span>';
 
         // KIRIM MENFESS KE TELEGRAM
-        await sendToTelegram(
-          formData,
-          status,
-          submitBtn,
-          form
-        );
+        incrementMenfessCount();
+
+showSuccessPopup();
+
+form.reset();
+
+document.getElementById("imagePreview").innerHTML = "";
+document.getElementById("imagePreview").classList.add("hidden");
+document.getElementById("charCount").textContent = "0/380";
+document.getElementById("previewSection").classList.add("hidden");
+
+status.textContent = "";
 
         setTimeout(() => {
 
