@@ -1,9 +1,13 @@
+import fetch from 'node-fetch';
+import { HttpsProxyAgent } from 'https-proxy-agent';
+
+const agent = new HttpsProxyAgent(process.env.FIXIE_URL);
+
 export default async function handler(req, res) {
 
   try {
 
-    const reference =
-      req.query.reference;
+    const reference = req.query.reference;
 
     const response = await fetch(
       'https://tripay.co.id/api/transaction/detail?reference=' + reference,
@@ -13,12 +17,13 @@ export default async function handler(req, res) {
         headers: {
           Authorization:
             `Bearer ${process.env.TRIPAY_API_KEY}`
-        }
+        },
+
+        agent
       }
     );
 
-    const result =
-      await response.json();
+    const result = await response.json();
 
     console.log(result);
 
