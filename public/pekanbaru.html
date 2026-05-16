@@ -447,7 +447,7 @@ encodeURIComponent(payment.qr_string);
       'Rp ' + payment.amount.toLocaleString('id-ID');
 }
 
-    async function createPayment(formData, status, submitBtn, form) {
+ async function createPayment(formData, status, submitBtn, form) {
 
   try {
 
@@ -468,7 +468,7 @@ encodeURIComponent(payment.qr_string);
 
     const result = await response.json();
 
-    console.log(result);
+    console.log("CREATE PAYMENT:", result);
 
     if (!result.success) {
 
@@ -483,50 +483,19 @@ encodeURIComponent(payment.qr_string);
 
     const payment = result.data;
 
+    console.log("PAYMENT:", payment);
+
     // TAMPILKAN QRIS
     showQRISPopup(payment);
 
-    // CEK STATUS PEMBAYARAN
-    async function checkPaymentStatus(reference, formData, status, submitBtn, form) {
-  // Simpan interval ke variabel agar bisa dihentikan nanti
-  const interval = setInterval(async () => {
-    try {
-      // 1. Cek status ke API kamu (Vercel)
-      const response = await fetch('/api/check-payment?reference=' + reference);
-      const result = await response.json();
-
-      console.log("Status Pembayaran:", result);
-
-      if (result.success && result.paid) {
-        // 2. Jika lunas, hentikan pengecekan otomatis
-        clearInterval(interval);
-
-        // 3. Update status di dalam popup QRIS
-        const paymentStatusEl = document.getElementById('paymentStatus');
-        paymentStatusEl.innerHTML = '<span class="text-green-400 font-bold">✅ Pembayaran Berhasil!</span>';
-        
-        // 4. Tambahkan efek suara atau hiasan jika perlu, lalu tutup popup QRIS setelah 1.5 detik
-        setTimeout(() => {
-          document.getElementById('qrisPopup').classList.add('hidden');
-          
-          // 5. Jalankan fungsi sukses yang sudah kamu punya (confetti + popup sukses)
-          incrementMenfessCount(); // Tambah hitungan limit harian
-          showSuccessPopup();     // Munculkan popup "Yeay! Menfess Terkirim"
-          
-          // 6. Bersihkan form
-          form.reset();
-          document.getElementById("imagePreview").innerHTML = "";
-          document.getElementById("imagePreview").classList.add("hidden");
-          document.getElementById("charCount").textContent = "0/380";
-          document.getElementById("previewSection").classList.add("hidden");
-          status.textContent = "";
-        }, 1500);
-      }
-    } catch (error) {
-      console.error("Gagal mengecek status:", error);
-    }
-  }, 4000); // Cek setiap 4 detik (lebih cepat sedikit dari 5 detik)
-};
+    // MULAI CEK STATUS PEMBAYARAN
+    checkPaymentStatus(
+      payment.reference,
+      formData,
+      status,
+      submitBtn,
+      form
+    );
 
   } catch (error) {
 
@@ -540,13 +509,15 @@ encodeURIComponent(payment.qr_string);
   }
 }
 
-    async function checkPaymentStatus(
+async function checkPaymentStatus(
   reference,
   formData,
   status,
   submitBtn,
   form
 ) {
+
+  console.log("CHECK REFERENCE:", reference);
 
   const interval = setInterval(async () => {
 
@@ -558,7 +529,7 @@ encodeURIComponent(payment.qr_string);
 
       const result = await response.json();
 
-      console.log(result);
+      console.log("STATUS PAYMENT:", result);
 
       if (
         result.success &&
@@ -570,9 +541,9 @@ encodeURIComponent(payment.qr_string);
         document
           .getElementById('paymentStatus')
           .innerHTML =
-            '✅ Pembayaran berhasil';
+            '<span class="text-green-400 font-bold">✅ Pembayaran berhasil</span>';
 
-        // KIRIM MENFESS
+        // KIRIM MENFESS KE TELEGRAM
         await sendToTelegram(
           formData,
           status,
@@ -592,7 +563,7 @@ encodeURIComponent(payment.qr_string);
 
     } catch (error) {
 
-      console.log(error);
+      console.log("CHECK ERROR:", error);
 
     }
 

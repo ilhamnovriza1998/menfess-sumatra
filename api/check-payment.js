@@ -6,7 +6,7 @@ export default async function handler(req, res) {
       req.query.reference;
 
     const response = await fetch(
-      'https://tripay.co.id/api-sandbox/transaction/detail?reference=' + reference,
+      'https://tripay.co.id/api/transaction/detail?reference=' + reference,
       {
         method: 'GET',
 
