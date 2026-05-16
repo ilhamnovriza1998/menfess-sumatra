@@ -8,6 +8,7 @@
     { "src": "/api/callback", "dest": "/api/callback.js" },
     { "src": "/api/create-payment", "dest": "/api/create-payment.js" },
     { "src": "/api/post-to-telegram", "dest": "/api/post-to-telegram.js" },
+    { "src": "/api/check-payment", "dest": "/api/check-payment.js" },
     { "src": "/(.*)", "dest": "/public/$1" }
   ]
 }
