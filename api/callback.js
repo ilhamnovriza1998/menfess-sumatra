@@ -28,7 +28,7 @@ export default async function handler(req, res) {
     if (data && data.status !== 'PAID_POSTED') {
       const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN);
       const channelId = process.env.TELEGRAM_CHANNEL;
-      const caption = `📩 **MENFESS BARU!**\n\n${data.pesan}\n\n#Ref: ${merchant_ref}`;
+      const caption = `${data.pesan}\n\n#Ref: ${merchant_ref}`;
 
       try {
         if (data.foto_url && data.foto_url.includes('http')) {
