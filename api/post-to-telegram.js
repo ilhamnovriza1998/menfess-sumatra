@@ -67,7 +67,7 @@ export default async function handler(req, res) {
     const type = fields.type?.toString() || "text";
 
     // Perbaikan: Pastikan pengambilan file image sesuai struktur formidable
-    const imageFile = files.image?.[0]; 
+    const imageFile = files.image; 
 
     if (!text.trim() && type !== "photo") {
       return res
