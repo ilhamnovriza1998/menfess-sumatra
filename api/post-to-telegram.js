@@ -134,43 +134,46 @@ export default async function handler(req, res) {
       } 
       
       // 2. Kirim ke Telegram (menggunakan finalBuffer)
-      try {
-        result = await bot.telegram.sendPhoto(
-          channelTarget,
-          { 
-            source: finalBuffer, // Menggunakan finalBuffer (yang sudah di-watermark atau asli)
-            filename: imageFile.originalFilename || 'photo.jpg'
-          },
-          {
-            caption: text,
-            parse_mode: "HTML",
-          }
-        );
-      } finally {
-        // PENTING: Hapus file sementara di Vercel setelah berhasil atau gagal dikirim
-        fs.unlink(filePath, (err) => {
-          if (err) {
-            console.error(`⚠️ Gagal menghapus file sementara: ${filePath}`, err);
-          } else {
-            console.log(`🗑️ File sementara berhasil dihapus: ${filePath}`);
-          }
-        });
-      }
+      
+     try {
 
+  // ✅ TIDAK KIRIM KE TELEGRAM LAGI
+  // cuma simpan buffer final
+
+  result = {
+    success: true
+  };
+
+} finally {
+
+  // hapus file sementara
+  fs.unlink(filePath, (err) => {
+
+    if (err) {
+      console.error(`⚠️ Gagal menghapus file sementara: ${filePath}`, err);
     } else {
-      // 💬 Kirim teks biasa
-      result = await bot.telegram.sendMessage(channelTarget, text, {
-        parse_mode: "HTML",
-      });
+      console.log(`🗑️ File sementara berhasil dihapus: ${filePath}`);
     }
 
-    // ✅ Kirim respons sukses ke frontend
-    return res.status(200).json({
-      success: true,
-      message: "✅ Menfess berhasil dikirim ke Telegram!",
-      messageId: result.message_id || null,
-    });
+  });
 
+}
+
+} else {
+
+  // ✅ mode text juga jangan kirim telegram dulu
+
+  result = {
+    success: true
+  };
+
+}
+
+// ✅ response sukses ke frontend
+return res.status(200).json({
+  success: true,
+  message: "Data berhasil disimpan"
+});
   // --- Akhir Blok Try/Catch ---
   } catch (error) {
     console.error("❌ Error Telegram:", error);
