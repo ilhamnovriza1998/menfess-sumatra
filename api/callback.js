@@ -1,6 +1,11 @@
 import { createClient } from '@supabase/supabase-js';
 import { Telegraf } from 'telegraf';
 import crypto from 'crypto';
+import {
+  formatCaption,
+  sendTelegramPhoto,
+  sendTelegramMessage
+} from '../lib/telegram.js';
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
@@ -80,24 +85,20 @@ ${data.pesan}
         data.foto_url.includes('http')
       ) {
 
-        await bot.telegram.sendPhoto(
-          channelId,
-          data.foto_url,
-          {
-            caption,
-            parse_mode: 'HTML'
-          }
+        await sendTelegramPhoto(
+         bot,
+         channelId,
+         data.foto_url,
+         formatCaption(caption)
         );
 
       } else {
 
         // ✅ text only
-        await bot.telegram.sendMessage(
-          channelId,
-          caption,
-          {
-            parse_mode: 'HTML'
-          }
+        await sendTelegramMessage(
+         bot,
+         channelId,
+         formatCaption(caption)
         );
 
       }
