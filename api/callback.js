@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js';
+import { supabase } from '../lib/supabase.js';
 import { Telegraf } from 'telegraf';
 import crypto from 'crypto';
 import {
@@ -6,11 +6,6 @@ import {
   sendTelegramPhoto,
   sendTelegramMessage
 } from '../lib/telegram.js';
-
-const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_ANON_KEY
-);
 
 export default async function handler(req, res) {
 

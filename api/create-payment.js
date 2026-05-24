@@ -1,19 +1,16 @@
-import { createClient } from '@supabase/supabase-js';
+import { supabase } from '../lib/supabase.js';
 import crypto from 'crypto';
 import axios from 'axios';
 import { HttpsProxyAgent } from 'https-proxy-agent';
-
-const supabase = createClient(
-  process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-);
+import { createSignature } from '../lib/payment.js';
+import {generateMerchantRef} from '../lib/utils.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ success: false });
 
   try {
     const { text, imageUrl } = req.body;
-    const merchantRef = 'MENFESS-' + Date.now();
+    const merchantRef = generateMerchantRef();
     const amount = 5000;
 
     // 1. Simpan ke Supabase agar data tidak hilang saat callback
@@ -35,8 +32,12 @@ export default async function handler(req, res) {
     const apiKey = process.env.TRIPAY_API_KEY.trim();
 
     // Buat Signature
-    const signature = crypto.createHmac('sha256', pKey)
-      .update(mCode + merchantRef + amount).digest('hex');
+    const signature = createSignature(   
+  mCode,
+  merchantRef,
+  amount,
+  prKey
+);
 
     const payload = {
       method: 'QRIS',
