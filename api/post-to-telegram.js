@@ -4,6 +4,9 @@ import fs from "fs";
 import path from 'path'; // <--- BARU: Untuk menangani jalur file absolut
 import Jimp from 'jimp'; // <--- BARU: Untuk memproses dan watermarking gambar
 import { isEmptyText } from '../lib/utils.js';
+import { applyWatermark } from '../lib/watermark.js';
+import { uploadImage } from '../lib/upload.js';
+import { createSignature } from '../lib/payment.js';
 
 // ✅ Nonaktifkan bodyParser bawaan Next/Vercel agar bisa handle multipart (upload foto)
 export const config = {
@@ -102,29 +105,46 @@ export default async function handler(req, res) {
             throw new Error("Watermark file not found, sending original photo."); 
         }
         
-        // Proses Jimp
-        const image = await Jimp.read(originalBuffer);
-        const watermark = await Jimp.read(WATERMARK_PATH);
+        // Terapkan watermark pada foto
 
-        // Atur ukuran watermark (misalnya, menjadi 1/5 lebar foto)
-        watermark.resize(image.bitmap.width / 5, Jimp.AUTO); 
-        
-        // Atur opacity watermark (50%)
-        watermark.opacity(0.5);
+        finalBuffer = await applyWatermark(filePath, WATERMARK_PATH);
 
-        // Hitung posisi (sudut kanan bawah dengan padding 20px)
-        const x = image.bitmap.width - watermark.bitmap.width - 20;
-        const y = image.bitmap.height - watermark.bitmap.height - 20;
+         console.log("✅ Watermarking berhasil dilakukan.");
 
-        // Gabungkan watermark ke gambar
-        image.composite(watermark, x, y); 
+         const imageUrl = await uploadImage(finalBuffer,`${Date.now()}.jpg`
+        );
 
-        // Dapatkan Buffer gambar hasil watermarking (menggunakan format JPEG untuk Telegram)
-        finalBuffer = await image.getBufferAsync(Jimp.MIME_JPEG);
-        
-        console.log("✅ Watermarking berhasil dilakukan.");
+        console.log("✅ Upload Supabase berhasil:",imageUrl
+        );
 
-      } catch (watermarkError) {
+        const merchantRef = `TRX-${Date.now()}`;
+        const { data: menfessData, error: insertError } =
+  await supabase
+    .from('menfess')
+    .insert([
+      {
+        text,
+        type,
+        image_url: imageUrl,
+        status: 'UNPAID',
+        merchant_ref: merchantRef
+      }
+    ])
+    .select()
+    .single();
+
+if (insertError) {
+  throw insertError;
+}
+
+const tripayResult =
+  await createTransaction(
+    merchantRef,
+    10000,
+  );
+      } 
+      
+      catch (watermarkError) {
         console.error("❌ Gagal saat watermarking:", watermarkError.message);
         // Fallback: Jika terjadi error (misal Jimp gagal), kirim buffer asli
         if (!finalBuffer) {
@@ -171,7 +191,10 @@ export default async function handler(req, res) {
 // ✅ response sukses ke frontend
 return res.status(200).json({
   success: true,
-  message: "Data berhasil disimpan"
+  qr_url:
+    tripayResult.data.qr_url,
+  checkout_url:
+    tripayResult.data.checkout_url
 });
   // --- Akhir Blok Try/Catch ---
   } catch (error) {
