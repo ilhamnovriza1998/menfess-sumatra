@@ -2,11 +2,11 @@
 import formidable from "formidable";
 import fs from "fs";
 import path from 'path'; // <--- BARU: Untuk menangani jalur file absolut
-import Jimp from 'jimp'; // <--- BARU: Untuk memproses dan watermarking gambar
 import { isEmptyText } from '../lib/utils.js';
 import { applyWatermark } from '../lib/watermark.js';
 import { uploadImage } from '../lib/upload.js';
-import { createSignature } from '../lib/payment.js';
+import { supabase } from '../lib/supabase.js';
+import { createTransaction } from '../lib/payment.js';
 
 // ✅ Nonaktifkan bodyParser bawaan Next/Vercel agar bisa handle multipart (upload foto)
 export const config = {
@@ -78,6 +78,7 @@ export default async function handler(req, res) {
     }
 
     let result;
+    let tripayResult;
     
     // 🖼️ Jika ada file foto, kirim sebagai foto + caption
     if (type === "photo" && imageFile) {
@@ -125,7 +126,7 @@ export default async function handler(req, res) {
       {
         text,
         type,
-        image_url: imageUrl,
+        foto_url: imageUrl,
         status: 'UNPAID',
         merchant_ref: merchantRef
       }
@@ -137,7 +138,7 @@ if (insertError) {
   throw insertError;
 }
 
-const tripayResult =
+tripayResult =
   await createTransaction(
     merchantRef,
     10000,
