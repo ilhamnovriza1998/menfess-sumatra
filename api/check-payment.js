@@ -1,59 +1,36 @@
-import fetch from 'node-fetch';
-import { HttpsProxyAgent } from 'https-proxy-agent';
-
-const agent = new HttpsProxyAgent(process.env.FIXIE_URL);
+import { fetchTripayTransaction } from '../lib/payment.js';
 
 export default async function handler(req, res) {
-
   try {
-
     const reference = req.query.reference;
 
-    const response = await fetch(
-      'https://tripay.co.id/api/transaction/detail?reference=' + reference,
-      {
-        method: 'GET',
+    if (!reference) {
+      return res.status(400).json({
+        success: false,
+        error: 'reference wajib diisi'
+      });
+    }
 
-        headers: {
-          Authorization:
-            `Bearer ${process.env.TRIPAY_API_KEY}`
-        },
-
-        agent
-      }
-    );
-
-    const result = await response.json();
-
-    console.log(result);
+    const result = await fetchTripayTransaction(reference);
 
     if (!result.success) {
-
       return res.status(400).json({
         success: false,
         error: result.message
       });
-
     }
 
     return res.status(200).json({
-
       success: true,
-
-      paid:
-        result.data.status === 'PAID'
-
+      paid: result.data.status === 'PAID',
+      status: result.data.status
     });
-
   } catch (error) {
-
-    console.log(error);
+    console.error('Error check payment:', error.response?.data || error);
 
     return res.status(500).json({
       success: false,
-      error: error.message
+      error: error.response?.data?.message || error.message
     });
-
   }
-
 }

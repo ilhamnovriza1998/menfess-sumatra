@@ -1,213 +1,155 @@
-// api/post-to-telegram.js
-import formidable from "formidable";
-import fs from "fs";
-import path from 'path'; // <--- BARU: Untuk menangani jalur file absolut
-import { isEmptyText } from '../lib/utils.js';
+import formidable from 'formidable';
+import fs from 'fs';
+import path from 'path';
 import { applyWatermark } from '../lib/watermark.js';
 import { uploadImage } from '../lib/upload.js';
-import { supabase } from '../lib/supabase.js';
-import { createTransaction } from '../lib/payment.js';
+import { normalizeMenfessType } from '../lib/menfess.js';
+import { createPendingTransaction } from '../lib/transactions.js';
+import { isEmptyText } from '../lib/utils.js';
 
-// ✅ Nonaktifkan bodyParser bawaan Next/Vercel agar bisa handle multipart (upload foto)
 export const config = {
   api: {
-    bodyParser: false,
-  },
+    bodyParser: false
+  }
 };
 
-// Definisikan jalur absolut ke file watermark
-// Ini memastikan Vercel dapat menemukan file yang ada di folder 'public'
-const WATERMARK_PATH = path.join(process.cwd(), 'public', 'watermark.png'); 
+const WATERMARK_PATH = path.join(process.cwd(), 'public', 'watermark.png');
+
+function getSingleValue(value) {
+  if (Array.isArray(value)) {
+    return value[0];
+  }
+
+  return value;
+}
+
+function getSingleFile(value) {
+  if (Array.isArray(value)) {
+    return value[0];
+  }
+
+  return value;
+}
+
+function setCorsHeaders(res) {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST,OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+}
+
+async function parseMultipart(req) {
+  const form = formidable({
+    multiples: false,
+    maxFileSize: 10 * 1024 * 1024,
+    keepExtensions: true
+  });
+
+  return await new Promise((resolve, reject) => {
+    form.parse(req, (err, fields, files) => {
+      if (err) {
+        reject(err);
+        return;
+      }
+
+      resolve({ fields, files });
+    });
+  });
+}
+
+async function watermarkAndUpload(imageFile) {
+  const filePath = imageFile?.filepath;
+
+  if (!filePath || !fs.existsSync(filePath)) {
+    throw new Error('Tidak ada file foto yang terdeteksi.');
+  }
+
+  let imageBuffer;
+
+  if (fs.existsSync(WATERMARK_PATH)) {
+    imageBuffer = await applyWatermark(filePath, WATERMARK_PATH);
+  } else {
+    console.warn('File watermark.png tidak ditemukan:', WATERMARK_PATH);
+    imageBuffer = fs.readFileSync(filePath);
+  }
+
+  return await uploadImage(imageBuffer, `${Date.now()}.jpg`);
+}
+
+function removeTempFile(imageFile) {
+  const filePath = imageFile?.filepath;
+
+  if (filePath && fs.existsSync(filePath)) {
+    fs.unlink(filePath, (err) => {
+      if (err) {
+        console.error('Gagal menghapus file sementara:', err);
+      }
+    });
+  }
+}
 
 export default async function handler(req, res) {
-  // 🌐 Izinkan CORS agar bisa diakses dari front-end HTML mana pun
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+  setCorsHeaders(res);
 
-  if (req.method === "OPTIONS") {
+  if (req.method === 'OPTIONS') {
     return res.status(200).end();
   }
 
-  // 🚫 Tolak method selain POST
-  if (req.method !== "POST") {
+  if (req.method !== 'POST') {
     return res.status(405).json({
       success: false,
-      error: "Method not allowed. Gunakan POST untuk mengirim menfess.",
+      error: 'Method not allowed. Gunakan POST untuk mengirim menfess.'
     });
   }
 
-  // --- Mulai Blok Try/Catch ---
+  let imageFile;
+
   try {
-    // 🧩 Ambil token & channel dari environment Vercel
-    const botToken = process.env.TELEGRAM_BOT_TOKEN;
-    const channelTarget = process.env.TELEGRAM_CHANNEL;
+    const { fields, files } = await parseMultipart(req);
 
-    if (!botToken || !channelTarget) {
-      throw new Error(
-        "Environment variable TELEGRAM_BOT_TOKEN atau TELEGRAM_CHANNEL belum diatur di Vercel."
-      );
-    }
+    const text = String(getSingleValue(fields.text) || '').trim();
+    const requestedType = String(getSingleValue(fields.type) || 'text');
+    imageFile = getSingleFile(files.image);
+    const type = normalizeMenfessType(requestedType, imageFile);
 
-
-    // 📦 Parse form-data (FormData dari frontend)
-    const form = formidable({
-      multiples: false,
-      maxFileSize: 10 * 1024 * 1024, // batas 10 MB
-      keepExtensions: true,
-    });
-
-    const [fields, files] = await new Promise((resolve, reject) => {
-      form.parse(req, (err, fields, files) => {
-        if (err) reject(err);
-        else resolve([fields, files]);
+    if (type === 'text' && isEmptyText(text)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Teks menfess tidak boleh kosong.'
       });
+    }
+
+    if (type === 'photo' && !imageFile) {
+      return res.status(400).json({
+        success: false,
+        error: 'Pilih foto terlebih dahulu sebelum mengirim.'
+      });
+    }
+
+    const fotoUrl = type === 'photo'
+      ? await watermarkAndUpload(imageFile)
+      : null;
+
+    const { merchantRef, amount, payment } = await createPendingTransaction({
+      req,
+      pesan: text,
+      type,
+      fotoUrl
     });
 
-    // 🧾 Ambil data teks & tipe kiriman
-    const text = fields.text?.toString() || "";
-    const type = fields.type?.toString() || "text";
-
-    // Perbaikan: Pastikan pengambilan file image sesuai struktur formidable
-    const imageFile = files.image; 
-
-    if (isEmptyText(text) && type!=="photo") {
-      return res
-        .status(400)
-        .json({ success: false, error: "Teks menfess tidak boleh kosong." });
-    }
-
-    let result;
-    let tripayResult;
-    
-    // 🖼️ Jika ada file foto, kirim sebagai foto + caption
-    if (type === "photo" && imageFile) {
-      // Ambil jalur file sementara
-      const filePath = imageFile.filepath; 
-
-      if (!filePath || !fs.existsSync(filePath)) {
-        return res.status(400).json({ success: false, error: "Tidak ada file foto yang terdeteksi." });
-      }
-
-      let finalBuffer; // Buffer yang akan dikirim ke Telegram (sudah di-watermark)
-      let originalBuffer; // Buffer file asli dari upload
-
-      // 1. Baca file foto asli dan lakukan Watermarking
-      try {
-        
-        // Baca file foto asli
-        originalBuffer = fs.readFileSync(filePath);
-        
-        // Cek apakah file watermark ada
-        if (!fs.existsSync(WATERMARK_PATH)) {
-            console.warn("⚠️ File watermark.png tidak ditemukan di path:", WATERMARK_PATH);
-            // Jika watermark hilang, gunakan buffer asli sebagai fallback
-            finalBuffer = originalBuffer; 
-            throw new Error("Watermark file not found, sending original photo."); 
-        }
-        
-        // Terapkan watermark pada foto
-
-        finalBuffer = await applyWatermark(filePath, WATERMARK_PATH);
-
-         console.log("✅ Watermarking berhasil dilakukan.");
-
-         const imageUrl = await uploadImage(finalBuffer,`${Date.now()}.jpg`
-        );
-
-        console.log("✅ Upload Supabase berhasil:",imageUrl
-        );
-
-        const merchantRef = `TRX-${Date.now()}`;
-        const { data: menfessData, error: insertError } =
-  await supabase
-    .from('menfess')
-    .insert([
-      {
-        text,
-        type,
-        foto_url: imageUrl,
-        status: 'UNPAID',
-        merchant_ref: merchantRef
-      }
-    ])
-    .select()
-    .single();
-
-if (insertError) {
-  throw insertError;
-}
-
-tripayResult =
-  await createTransaction(
-    merchantRef,
-    10000,
-  );
-      } 
-      
-      catch (watermarkError) {
-        console.error("❌ Gagal saat watermarking:", watermarkError.message);
-        // Fallback: Jika terjadi error (misal Jimp gagal), kirim buffer asli
-        if (!finalBuffer) {
-           finalBuffer = originalBuffer || fs.readFileSync(filePath);
-        }
-      } 
-      
-      // 2. Kirim ke Telegram (menggunakan finalBuffer)
-
-     try {
-
-  // ✅ TIDAK KIRIM KE TELEGRAM LAGI
-  // cuma simpan buffer final
-
-  result = {
-    success: true
-  };
-
-} finally {
-
-  // hapus file sementara
-  fs.unlink(filePath, (err) => {
-
-    if (err) {
-      console.error(`⚠️ Gagal menghapus file sementara: ${filePath}`, err);
-    } else {
-      console.log(`🗑️ File sementara berhasil dihapus: ${filePath}`);
-    }
-
-  });
-
-}
-
-} else {
-
-  // ✅ mode text juga jangan kirim telegram dulu
-
-  result = {
-    success: true
-  };
-
-}
-
-// ✅ response sukses ke frontend
-return res.status(200).json({
-  success: true,
-  qr_url:
-    tripayResult.data.qr_url,
-  checkout_url:
-    tripayResult.data.checkout_url
-});
-  // --- Akhir Blok Try/Catch ---
+    return res.status(200).json({
+      success: true,
+      merchant_ref: merchantRef,
+      amount,
+      data: payment.data
+    });
   } catch (error) {
-    console.error("❌ Error Telegram:", error);
-    // Tambahkan error handling yang lebih spesifik untuk token/channel
-    const displayError = error.message.includes("400") || error.message.includes("404") || error.message.includes("403")
-      ? "Gagal mengirim. Pastikan token bot dan ID channel sudah benar (dan bot adalah admin)."
-      : error.message;
+    console.error('Error submit menfess:', error.response?.data || error);
 
     return res.status(500).json({
       success: false,
-      error: displayError || "Terjadi kesalahan tidak dikenal saat mengirim ke Telegram.",
+      error: error.response?.data?.message || error.message || 'Terjadi kesalahan saat membuat pembayaran.'
     });
+  } finally {
+    removeTempFile(imageFile);
   }
 }

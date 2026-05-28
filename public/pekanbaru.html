@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Kirim Menfess - Base Pekanbaru</title>
-  <meta name="description" content="Kirim menfess teks atau foto untuk Base Pekanbaru. Anonim & langsung masuk channel Telegram dan Twitter/X" />
+  <meta name="description" content="Kirim menfess teks atau foto untuk Base Pekanbaru. Anonim dan masuk channel Telegram setelah pembayaran berhasil." />
   <meta name="theme-color" content="#8a2be2" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -109,7 +109,7 @@
     <div class="max-w-2xl mx-auto px-4">
       <div class="text-center mb-8">
         <h2 class="text-3xl font-extrabold">Kirim Menfess untuk <span class="text-pink-400">Base Pekanbaru</span></h2>
-        <p class="mt-2 text-white/80">Kirim menfess teks atau foto secara anonim. Langsung masuk channel Telegram dan Twitter/X</p>
+        <p class="mt-2 text-white/80">Kirim menfess teks atau foto secara anonim. Masuk channel Telegram setelah pembayaran berhasil.</p>
         <div class="mt-4 flex flex-wrap gap-2 justify-center">
           <div class="inline-flex items-center gap-2 px-3 py-1 bg-teal-500/20 border border-teal-400/30 rounded-full text-teal-300 text-sm">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
@@ -272,8 +272,7 @@
   <script>
     document.getElementById('year').textContent = new Date().getFullYear();
 
-    // API URL - Ganti dengan URL Vercel kamu yang sebenarnya
-    const API_URL = 'https://menfess-sumatra.vercel.app/api/post-to-telegram.js';
+    const API_URL = '/api/post-to-telegram';
 
     // Toggle form type
     const typeSelect = document.getElementById("type");
@@ -444,26 +443,19 @@ encodeURIComponent(payment.qr_string);
   document
     .getElementById('qrisAmount')
     .textContent =
-      'Rp ' + payment.amount.toLocaleString('id-ID');
+      'Rp ' + Number(payment.amount).toLocaleString('id-ID');
 }
 
  async function createPayment(formData, status, submitBtn, form) {
 
   try {
 
-    status.textContent = "⏳ Membuat QRIS...";
+    status.textContent = "⏳ Menyiapkan menfess dan membuat QRIS...";
     status.className = "text-center mt-4 text-sm text-yellow-400";
 
-    const response = await fetch('/api/create-payment.js', {
+    const response = await fetch(API_URL, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-
-      body: JSON.stringify({
-        text: formData.get('text'),
-        type: formData.get('type')
-      })
+      body: formData
     });
 
     const result = await response.json();
@@ -472,7 +464,7 @@ encodeURIComponent(payment.qr_string);
 
     if (!result.success) {
 
-      status.textContent = "❌ " + result.error;
+      status.textContent = "❌ " + (result.error || result.message || 'Gagal membuat pembayaran');
       status.className = "text-center mt-4 text-sm text-red-400";
 
       submitBtn.disabled = false;
@@ -538,14 +530,11 @@ async function checkPaymentStatus(
 
         clearInterval(interval);
 
-        await sendToTelegram( formData, status, submitBtn, form );
-
         document
           .getElementById('paymentStatus')
           .innerHTML =
             '<span class="text-green-400 font-bold">✅ Pembayaran berhasil</span>';
 
-        // KIRIM MENFESS KE TELEGRAM
         incrementMenfessCount();
 
 showSuccessPopup();
@@ -558,6 +547,8 @@ document.getElementById("charCount").textContent = "0/380";
 document.getElementById("previewSection").classList.add("hidden");
 
 status.textContent = "";
+submitBtn.disabled = false;
+submitBtn.innerHTML = '🚀 Kirim Menfess';
 
         setTimeout(() => {
 
@@ -578,69 +569,6 @@ status.textContent = "";
   }, 5000);
 }
 
-    // Function untuk kirim ke Telegram
-    async function sendToTelegram(formData, status, submitBtn, form) {
-      try {
-        console.log('🔄 Mengirim ke API...');
-        
-        // lakukan fetch dan cek status HTTP dahulu
-        const response = await fetch(API_URL, {
-          method: 'POST',
-          body: formData,
-          mode: 'cors'
-        });
-
-        if (!response.ok) {
-          // coba parse body jika ada
-          let errText = `HTTP ${response.status}`;
-          try {
-            const errJson = await response.json();
-            errText = errJson.error || JSON.stringify(errJson);
-          } catch (e) {
-            // ignore parse error
-          }
-          throw new Error(errText);
-        }
-
-        const result = await response.json();
-        console.log('📨 Response dari API:', result);
-
-        if (result.success) {
-          incrementMenfessCount();
-          showSuccessPopup();
-          status.textContent = "";
-          form.reset();
-          document.getElementById("imagePreview").innerHTML = "";
-          document.getElementById("imagePreview").classList.add("hidden");
-          charCount.textContent = "0/380";
-          previewSection.classList.add("hidden");
-          
-          console.log('✅ Menfess berhasil dikirim!');
-        } else {
-          status.textContent = `❌ ${result.error || 'Terjadi kesalahan'}`;
-          status.className = "text-center mt-4 text-sm text-red-400";
-          
-          console.error('❌ Error details:', result);
-          
-          // Tampilkan pesan error lebih spesifik
-          if (result.error && result.error.includes('tidak memiliki akses')) {
-            status.innerHTML = `❌ ${result.error}<br><small>Pastikan bot sudah jadi admin di channel</small>`;
-          }
-        }
-      } catch (error) {
-        console.error('🚨 Network error:', error);
-        // tampilkan pesan yang lebih ramah
-        document.getElementById("status").textContent = `❌ ${error.message || 'Gagal terhubung ke server. Cek koneksi internet dan pastikan API_URL benar.'}`;
-        document.getElementById("status").className = "text-center mt-4 text-sm text-red-400";
-      } finally {
-        // pastikan tombol kembali ke kondisi semula
-        if (submitBtn) {
-          submitBtn.disabled = false;
-          submitBtn.innerHTML = '🚀 Kirim Menfess';
-        }
-      }
-    }
-
     // Kirim ke Telegram via API Vercel - HANYA GUNAKAN SATU LISTENER INI
     document.getElementById("menfessForm").addEventListener("submit", async (e) => {
       e.preventDefault();
@@ -649,7 +577,7 @@ status.textContent = "";
       
       // 1. Cek Batasan Kirim
       if (!canSendMenfess()) {
-        status.textContent = "❌ Kamu sudah mengirim 2 menfess hari ini. Coba lagi besok!";
+        status.textContent = "❌ Kamu sudah mengirim 5 menfess hari ini. Coba lagi besok!";
         status.className = "text-center mt-4 text-sm text-red-400";
         return;
       }
@@ -657,7 +585,7 @@ status.textContent = "";
       // 2. Tampilkan Status Loading
       submitBtn.disabled = true;
       submitBtn.innerHTML = "⏳ Mengirim...";
-      status.textContent = "⏳ Mengirim menfess ke Telegram...";
+      status.textContent = "⏳ Menyiapkan pembayaran menfess...";
       status.className = "text-center mt-4 text-sm text-yellow-400";
 
       const type = typeSelect.value;
@@ -702,17 +630,6 @@ status.textContent = "";
       // 4. Panggil function pembayaran
       await createPayment(formData, status, submitBtn, e.target);
     });
-
-    // HAPUS KODE BERIKUT (EVENT LISTENER DUPLIKAT)
-    /*
-    // Tangani event submit form
-    const menfessForm = document.getElementById("menfessForm");
-    menfessForm.addEventListener("submit", async function (e) {
-      e.preventDefault(); // cegah reload halaman
-
-      // ... (seluruh kode di dalamnya)
-    });
-    */
   </script>
 </body>
 </html>

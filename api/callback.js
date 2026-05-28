@@ -1,126 +1,97 @@
-import { supabase } from '../lib/supabase.js';
 import { Telegraf } from 'telegraf';
-import crypto from 'crypto';
+import { supabase } from '../lib/supabase.js';
+import { verifyTripayCallback } from '../lib/payment.js';
+import { buildTelegramCaption } from '../lib/menfess.js';
 import {
   formatCaption,
   sendTelegramPhoto,
   sendTelegramMessage
 } from '../lib/telegram.js';
 
-export default async function handler(req, res) {
+async function postTransactionToTelegram(transaction, merchantRef) {
+  const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN);
+  const channelId = process.env.TELEGRAM_CHANNEL;
+  const caption = formatCaption(
+    buildTelegramCaption(transaction.pesan, merchantRef)
+  );
 
+  if (transaction.foto_url) {
+    return await sendTelegramPhoto(
+      bot,
+      channelId,
+      transaction.foto_url,
+      caption
+    );
+  }
+
+  return await sendTelegramMessage(
+    bot,
+    channelId,
+    caption
+  );
+}
+
+export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).send('Method Not Allowed');
   }
 
   try {
+    const callbackSignature = req.headers['x-callback-signature'];
 
-    // ✅ Validasi signature Tripay
-    const callbackSignature =
-      req.headers['x-callback-signature'];
-
-    const signature = crypto
-      .createHmac(
-        'sha256',
-        process.env.TRIPAY_PRIVATE_KEY.trim()
-      )
-      .update(JSON.stringify(req.body))
-      .digest('hex');
-
-    if (signature !== callbackSignature) {
+    if (!verifyTripayCallback(req.body, callbackSignature)) {
       return res.status(403).send('Invalid Signature');
     }
 
-    const {
-      status,
-      merchant_ref
-    } = req.body;
+    const { status, merchant_ref: merchantRef } = req.body;
 
-    // ✅ hanya proses jika PAID
-    if (status === 'PAID') {
-
-      // ambil data transaksi
-      const { data, error } =
-        await supabase
-          .from('transactions')
-          .select('*')
-          .eq('merchant_ref', merchant_ref)
-          .single();
-
-      if (error || !data) {
-        throw new Error('Transaksi tidak ditemukan');
-      }
-
-      // ✅ cegah double post
-      if (data.status === 'PAID_POSTED') {
-        return res.status(200).json({
-          success: true,
-          message: 'Sudah pernah dipost'
-        });
-      }
-
-      const bot =
-        new Telegraf(
-          process.env.TELEGRAM_BOT_TOKEN
-        );
-
-      const channelId =
-        process.env.TELEGRAM_CHANNEL;
-
-      const caption =
-`━━━〔 💌 ALTER BASE PKU 💌 〕━━━
-
-${data.pesan}
-
-#Ref: ${merchant_ref}`;
-
-      // ✅ jika ada foto
-      if (
-        data.foto_url &&
-        data.foto_url.includes('http')
-      ) {
-
-        await sendTelegramPhoto(
-         bot,
-         channelId,
-         data.foto_url,
-         formatCaption(caption)
-        );
-
-      } else {
-
-        // ✅ text only
-        await sendTelegramMessage(
-         bot,
-         channelId,
-         formatCaption(caption)
-        );
-
-      }
-
-      // ✅ update status
-      await supabase
-        .from('transactions')
-        .update({
-          status: 'PAID_POSTED'
-        })
-        .eq('merchant_ref', merchant_ref);
-
+    if (!merchantRef) {
+      return res.status(400).json({
+        success: false,
+        error: 'merchant_ref kosong'
+      });
     }
 
-    return res.status(200).json({
-      success: true
-    });
+    if (status !== 'PAID') {
+      await supabase
+        .from('transactions')
+        .update({ status })
+        .eq('merchant_ref', merchantRef);
 
+      return res.status(200).json({ success: true });
+    }
+
+    const { data: transaction, error } = await supabase
+      .from('transactions')
+      .select('*')
+      .eq('merchant_ref', merchantRef)
+      .single();
+
+    if (error || !transaction) {
+      throw new Error('Transaksi tidak ditemukan');
+    }
+
+    if (transaction.status === 'PAID_POSTED') {
+      return res.status(200).json({
+        success: true,
+        message: 'Sudah pernah dipost'
+      });
+    }
+
+    await postTransactionToTelegram(transaction, merchantRef);
+
+    await supabase
+      .from('transactions')
+      .update({ status: 'PAID_POSTED' })
+      .eq('merchant_ref', merchantRef);
+
+    return res.status(200).json({ success: true });
   } catch (error) {
-
-    console.error(error);
+    console.error('Error callback Tripay:', error);
 
     return res.status(500).json({
       success: false,
       error: error.message
     });
-
   }
-
 }
