@@ -12,7 +12,7 @@ async function postTransactionToTelegram(transaction, merchantRef) {
   const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN);
   const channelId = process.env.TELEGRAM_CHANNEL;
   const caption = formatCaption(
-    buildTelegramCaption(transaction.pesan, merchantRef)
+    buildTelegramCaption(transaction.pesan, merchantRef, transaction.base)
   );
 
   if (transaction.foto_url) {

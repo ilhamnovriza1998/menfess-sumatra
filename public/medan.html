@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Kirim Menfess - Base Pekanbaru</title>
-  <meta name="description" content="Kirim menfess teks atau foto untuk Base Pekanbaru. Anonim dan masuk Twitter/X Alter Base PKU setelah pembayaran berhasil." />
+  <title>Kirim Menfess - Base Medan</title>
+  <meta name="description" content="Kirim menfess teks atau foto untuk Base Medan. Anonim dan masuk Twitter/X Alter Base MEDAN setelah pembayaran berhasil." />
   <meta name="theme-color" content="#8a2be2" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -46,7 +46,11 @@
   </style>
 </head>
 
-  <div id="qrisPopup"
+
+
+<body class="text-white selection:bg-pink-500/30">
+
+      <div id="qrisPopup"
      class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/80 backdrop-blur-sm">
 
   <div class="glass rounded-3xl p-6 max-w-sm w-full mx-4 text-center border border-white/10">
@@ -78,8 +82,6 @@
   </div>
 </div>
 
-<body class="text-white selection:bg-pink-500/30">
-
   <header class="sticky top-0 z-40 backdrop-blur border-b border-white/10 bg-black/30">
     <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
       <a href="index.html" class="flex items-center gap-3 group">
@@ -93,7 +95,7 @@
           </defs>
         </svg>
         <span class="text-lg font-extrabold tracking-wide">
-          Menfess <span class="text-pink-400">Pekanbaru</span>
+          Menfess <span class="text-pink-400">MEDAN</span>
         </span>
       </a>
       <div class="flex items-center gap-3">
@@ -108,8 +110,8 @@
   <section id="form" class="py-12">
     <div class="max-w-2xl mx-auto px-4">
       <div class="text-center mb-8">
-        <h2 class="text-3xl font-extrabold">Kirim Menfess untuk <span class="text-pink-400">Base Pekanbaru</span></h2>
-        <p class="mt-2 text-white/80">Kirim menfess teks atau foto secara anonim. Masuk Twitter/X Alter Base PKU setelah pembayaran berhasil.</p>
+        <h2 class="text-3xl font-extrabold">Kirim Menfess untuk <span class="text-pink-400">Base MEDAN</span></h2>
+        <p class="mt-2 text-white/80">Kirim menfess teks atau foto secara anonim. Masuk Twitter/X Alter Base MEDAN setelah pembayaran berhasil.</p>
         <div class="mt-4 flex flex-wrap gap-2 justify-center">
           <div class="inline-flex items-center gap-2 px-3 py-1 bg-teal-500/20 border border-teal-400/30 rounded-full text-teal-300 text-sm">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
@@ -121,7 +123,7 @@
             <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
               <path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/>
             </svg>
-            Auto hashtag #pku
+            Auto hashtag #mdn
           </div>
           <div class="inline-flex items-center gap-2 px-3 py-1 bg-blue-500/20 border border-blue-400/30 rounded-full text-blue-300 text-sm">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
@@ -145,16 +147,16 @@
         <div id="textInput" class="flex flex-col gap-4 mb-6">
           <div class="flex items-center justify-between">
             <label for="menfessText" class="text-white/90 font-semibold">Tulis Menfess</label>
-            <span class="text-xs text-pink-400 bg-pink-400/10 px-2 py-1 rounded-full">Auto #pku</span>
+            <span class="text-xs text-pink-400 bg-pink-400/10 px-2 py-1 rounded-full">Auto #mdn</span>
           </div>
           <div class="relative">
             <textarea id="menfessText" name="text" rows="4" class="p-3 bg-white/5 border border-white/20 rounded-lg focus:outline-none focus:border-pink-400 transition w-full" placeholder="Tulis menfess kamu di sini... ✨"></textarea>
             <div class="absolute bottom-3 right-3 text-xs text-white/40">
-              #pku
+              #mdn
             </div>
           </div>
           <div class="text-xs text-white/60 flex justify-between">
-            <span>💡 Tips: Tambahkan lokasi seperti #Panam #Sudirman dll</span>
+            <span>💡 Tips: Tambahkan lokasi seperti #Amplas #SetiaBudi #Helvetia dll</span>
             <span id="charCount">0/380</span>
           </div>
         </div>
@@ -178,11 +180,11 @@
           <div class="relative">
             <textarea id="menfessCaption" name="caption" rows="2" class="p-3 bg-white/5 border border-white/20 rounded-lg focus:outline-none focus:border-pink-400 transition w-full" placeholder="Tuliskan caption untuk foto..."></textarea>
             <div class="absolute bottom-3 right-3 text-xs text-white/40">
-              #pku
+              #mdn
             </div>
           </div>
           <div class="text-xs text-white/60">
-            <span>💡 Caption akan otomatis ditambah #pku & watermark logo</span>
+            <span>💡 Caption akan otomatis ditambah #mdn & watermark logo</span>
           </div>
         </div>
 
@@ -191,7 +193,7 @@
           <div id="textPreview" class="hidden">
             <div class="bg-black/30 p-3 rounded-lg border border-white/10">
               <p id="previewText" class="text-white/90"></p>
-              <p class="text-pink-400 text-sm mt-1">#pku</p>
+              <p class="text-pink-400 text-sm mt-1">#mdn</p>
             </div>
           </div>
           <div id="photoPreview" class="hidden">
@@ -203,7 +205,7 @@
                 </div>
               </div>
               <p id="previewCaption" class="text-white/90 mt-2"></p>
-              <p class="text-pink-400 text-sm mt-1">#pku</p>
+              <p class="text-pink-400 text-sm mt-1">#mdn</p>
             </div>
           </div>
         </div>
@@ -297,7 +299,7 @@
       }
     });
 
-    // Character counter (380 karena nanti ditambah #pku = ~20 char)
+    // Character counter (380 karena nanti ditambah #mdn = ~20 char)
     menfessText.addEventListener("input", function() {
       charCount.textContent = `${this.value.length}/380`;
       if (this.value.length > 380) {
@@ -590,7 +592,7 @@ submitBtn.innerHTML = '🚀 Kirim Menfess';
 
       const type = typeSelect.value;
       const formData = new FormData();
-      formData.append('base', 'PEKANBARU');
+      formData.append('base', 'MEDAN');
 
       // 3. Persiapan Data dan Validasi
       if (type === "text") {
@@ -605,12 +607,12 @@ submitBtn.innerHTML = '🚀 Kirim Menfess';
            return;
         }
 
-        const text = `${textValue}\n#pku`;
+        const text = `${textValue}\n#mdn`;
         formData.append('text', text);
         formData.append('type', 'text');
         
       } else { // Mode Photo
-        const caption = menfessCaption.value ? `${menfessCaption.value}\n#pku` : '#pku';
+        const caption = menfessCaption.value ? `${menfessCaption.value}\n#mdn` : '#mdn';
         formData.append('text', caption);
         formData.append('type', 'photo');
         

@@ -108,6 +108,7 @@ export default async function handler(req, res) {
 
     const text = String(getSingleValue(fields.text) || '').trim();
     const requestedType = String(getSingleValue(fields.type) || 'text');
+    const base = String(getSingleValue(fields.base) || 'SUMATRA').trim();
     imageFile = getSingleFile(files.image);
     const type = normalizeMenfessType(requestedType, imageFile);
 
@@ -133,7 +134,8 @@ export default async function handler(req, res) {
       req,
       pesan: text,
       type,
-      fotoUrl
+      fotoUrl,
+      base
     });
 
     return res.status(200).json({
