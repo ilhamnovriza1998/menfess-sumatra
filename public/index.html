@@ -3,7 +3,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Menfess Sumatra 🍭</title>
-  <meta name="description" content="Kirim menfess teks atau foto secara anonim. Base pertama: Pekanbaru. Base lain: coming soon. Ikuti rules & ketentuan sebelum kirim, ya!" />
+  <meta name="description" content="Kirim menfess teks atau foto secara anonim. Base aktif: Pekanbaru dan Medan. Base lain menyusul. Ikuti rules & ketentuan sebelum kirim, ya!" />
   <meta name="theme-color" content="#8a2be2" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -75,35 +75,51 @@
       <nav class="hidden sm:flex items-center gap-6 text-sm opacity-90">
         <a href="#rules" class="hover:text-neonpink transition">Rules</a>
         <a href="#ketentuan" class="hover:text-neonpink transition">Ketentuan</a>
-        <a href="#bases" class="hover:text-neonpink transition">Base</a>
       </nav>
-      <div class="flex items-center gap-3">
-        <a href="pekanbaru.html" class="shine btn-neon inline-flex items-center gap-2 rounded-full bg-neonpink px-4 py-2 text-sm font-semibold hover:scale-[1.02] active:scale-95 transition" aria-label="Kirim Menfess Pekanbaru">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 12l18-9-9 18-2-7-7-2z" fill="currentColor"/></svg>
-          Kirim Menfess Pekanbaru
-        </a>
+      <div id="baseDropdown" class="relative group">
+        <button id="baseDropdownButton" type="button" class="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/5 px-4 py-2 text-sm font-semibold hover:border-neonpink/60 hover:text-neonpink transition" aria-expanded="false" aria-controls="baseDropdownMenu">
+          Base <span aria-hidden="true">▼</span>
+        </button>
+        <div id="baseDropdownMenu" class="hidden group-hover:block absolute right-0 mt-3 w-56 glass rounded-xl border border-white/10 p-2 shadow-glow z-50">
+          <a href="pekanbaru.html" class="block rounded-lg px-3 py-2 text-sm hover:bg-white/10 hover:text-neonpink transition">Pekanbaru</a>
+          <a href="medan.html" class="block rounded-lg px-3 py-2 text-sm hover:bg-white/10 hover:text-neonpink transition">Medan</a>
+          <div class="my-2 border-t border-white/10"></div>
+          <span class="flex items-center justify-between gap-3 rounded-lg px-3 py-2 text-sm text-white/55 cursor-not-allowed" aria-disabled="true">
+            Padang <span class="rounded-full border border-white/10 bg-white/5 px-2 py-0.5 text-[10px] text-neonblue">Coming Soon</span>
+          </span>
+          <span class="flex items-center justify-between gap-3 rounded-lg px-3 py-2 text-sm text-white/55 cursor-not-allowed" aria-disabled="true">
+            Batam <span class="rounded-full border border-white/10 bg-white/5 px-2 py-0.5 text-[10px] text-neonblue">Coming Soon</span>
+          </span>
+          <span class="flex items-center justify-between gap-3 rounded-lg px-3 py-2 text-sm text-white/55 cursor-not-allowed" aria-disabled="true">
+            Jambi <span class="rounded-full border border-white/10 bg-white/5 px-2 py-0.5 text-[10px] text-neonblue">Coming Soon</span>
+          </span>
+          <span class="flex items-center justify-between gap-3 rounded-lg px-3 py-2 text-sm text-white/55 cursor-not-allowed" aria-disabled="true">
+            Palembang <span class="rounded-full border border-white/10 bg-white/5 px-2 py-0.5 text-[10px] text-neonblue">Coming Soon</span>
+          </span>
+        </div>
       </div>
     </div>
   </header>  <!-- Hero -->  <section id="top" class="relative">
     <div class="max-w-6xl mx-auto px-4 pt-16 pb-10 grid md:grid-cols-2 gap-8 items-center">
       <div>
         <h1 class="text-4xl sm:text-5xl font-extrabold leading-tight drop-shadow">
-          Base <span class="text-neonpink">Sumatra</span> —
+          Menfess <span class="text-neonpink">Sumatra</span> —
           Kirim <span class="text-neonblue">menfess</span> teks & foto
           <span class="block text-2xl sm:text-3xl mt-3 text-white/80">Anonim</span>
         </h1>
         <p class="mt-5 text-white/85 max-w-prose">
           Ini adalah halaman utama <strong>Menfess Sumatra</strong>. Baca rules & ketentuan di bawah
-          dulu ya. Setelah itu, pencet tombol untuk menuju formulir Menfess Base Pekanbaru.
+          dulu ya. Pilih base yang ingin digunakan: Pekanbaru atau Medan.
         </p>
         <div class="mt-6 flex flex-wrap items-center gap-3">
           <a href="#rules" class="rounded-full px-4 py-2 border border-white/20 hover:border-neonpink/60 hover:text-neonpink transition">Lihat Rules</a>
           <a href="pekanbaru.html" class="btn-neon rounded-full px-5 py-2.5 bg-neonpink font-semibold hover:scale-[1.02] active:scale-95 transition">Kirim Menfess Pekanbaru</a>
+          <a href="medan.html" class="btn-neon rounded-full px-5 py-2.5 bg-neonpink font-semibold hover:scale-[1.02] active:scale-95 transition">Kirim Menfess Medan</a>
         </div>
         <div class="mt-6 text-xs text-white/70">
           <span class="inline-flex items-center gap-2 rounded-full px-3 py-1 border border-white/10 bg-white/5">
             <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-            Posting otomatis ke Twitter/x Alter Base — @menfesssumatra
+            Posting otomatis ke Twitter/x Masing" Base 
           </span>
           <span class="ml-2 inline-flex items-center gap-2 rounded-full px-3 py-1 border border-white/10 bg-white/5">
             QRIS otomatis — <strong>aktif</strong>
@@ -118,7 +134,7 @@
               <div class="text-center">
                 <p class="text-xs uppercase tracking-widest text-white/60">Preview</p>
                 <h3 class="mt-1 text-2xl font-bold">Menfess Card</h3>
-                <p class="mt-2 text-white/75 max-w-xs mx-auto">Contoh tampilan postingan setelah pembayaran berhasil dan terkirim ke Twitter/X Alter Base PKU.</p>
+                <p class="mt-2 text-white/75 max-w-xs mx-auto">Contoh tampilan postingan Menfess Sumatra.</p>
                 <div class="mt-4 mx-auto max-w-sm text-left text-sm">
                   <div class="rounded-xl border border-white/10 bg-white/5 p-4">
                     <div class="flex items-start gap-3">
@@ -199,15 +215,11 @@
           </ul>
         </div>
       </div>
-      <div class="mt-6 flex flex-wrap gap-3">
-        <a href="pekanbaru.html" class="btn-neon rounded-full px-5 py-2.5 bg-neonpink font-semibold hover:scale-[1.02] active:scale-95 transition">Menuju Form Menfess Pekanbaru</a>
-        <a href="#bases" class="rounded-full px-4 py-2 border border-white/20 hover:border-neonpink/60 hover:text-neonpink transition">Lihat Base Lain</a>
-      </div>
-    </div>
+
   </section>  <!-- Base Section -->  <section id="bases" class="py-12">
     <div class="max-w-6xl mx-auto px-4">
       <h2 class="text-3xl font-extrabold">Daftar Base</h2>
-      <p class="mt-2 text-white/80">Saat ini base aktif: <strong>Pekanbaru</strong>. Kota lain menyusul 👀</p>
+      <p class="mt-2 text-white/80">Saat ini base aktif:<br>- <strong>Pekanbaru</strong><br>- <strong>Medan</strong><br><br>Base lain akan menyusul.</p>
       <div class="mt-6 grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <!-- Pekanbaru Active -->
         <article class="glass rounded-2xl p-5 border border-white/10 flex flex-col">
@@ -221,18 +233,18 @@
             <a href="https://x.com/MENFESSSUMATRA" target="_blank" class="rounded-full px-4 py-2 border border-white/20 hover:text-neonpink hover:border-neonpink/60 transition">Lihat Akun</a>
           </div>
         </article>
-        <!-- Coming soon cards -->
-        <article class="glass rounded-2xl p-5 border border-white/10 flex flex-col opacity-70">
+        <article class="glass rounded-2xl p-5 border border-white/10 flex flex-col">
           <div class="flex items-center justify-between">
             <h3 class="text-xl font-bold">Medan</h3>
-            <span class="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full bg-yellow-500/20 text-yellow-300 border border-yellow-400/30">Coming Soon</span>
+            <span class="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">Aktif</span>
           </div>
-          <p class="mt-2 text-white/70 text-sm">Sedang disiapkan. Tunggu pengumuman ya!</p>
+          <p class="mt-2 text-white/80 text-sm">Handle X/Twitter: <span class="text-neonpink font-semibold">@menfesssumatra2</span></p>
           <div class="mt-4 inline-flex gap-3">
-            <button disabled class="rounded-full px-4 py-2 border border-white/10 cursor-not-allowed">Kirim Menfess</button>
-            <button disabled class="rounded-full px-4 py-2 border border-white/10 cursor-not-allowed">Lihat Akun</button>
+            <a href="medan.html" class="btn-neon rounded-full px-4 py-2 bg-neonpink font-semibold">Kirim Menfess</a>
+            <a href="https://x.com/menfesssumatra2" target="_blank" class="rounded-full px-4 py-2 border border-white/20 hover:text-neonpink hover:border-neonpink/60 transition">Lihat Akun</a>
           </div>
         </article>
+        <!-- Coming soon cards -->
         <article class="glass rounded-2xl p-5 border border-white/10 flex flex-col opacity-70">
           <div class="flex items-center justify-between">
             <h3 class="text-xl font-bold">Padang</h3>
@@ -289,5 +301,21 @@
         if(id.length>1){ e.preventDefault(); document.querySelector(id).scrollIntoView({behavior:'smooth', block:'start'}); }
       })
     })
+    // base dropdown
+    const baseDropdown = document.getElementById('baseDropdown');
+    const baseDropdownButton = document.getElementById('baseDropdownButton');
+    const baseDropdownMenu = document.getElementById('baseDropdownMenu');
+    baseDropdownButton.addEventListener('click', e=>{
+      e.stopPropagation();
+      const isOpen = !baseDropdownMenu.classList.contains('hidden');
+      baseDropdownMenu.classList.toggle('hidden', isOpen);
+      baseDropdownButton.setAttribute('aria-expanded', String(!isOpen));
+    });
+    document.addEventListener('click', e=>{
+      if(!baseDropdown.contains(e.target)){
+        baseDropdownMenu.classList.add('hidden');
+        baseDropdownButton.setAttribute('aria-expanded', 'false');
+      }
+    });
   </script></body>
           </html>
