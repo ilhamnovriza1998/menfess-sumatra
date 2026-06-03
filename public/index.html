@@ -16,8 +16,8 @@
         extend: {
           fontFamily: { display: ['Outfit', 'ui-sans-serif', 'system-ui'] },
           colors: {
-            neonpink: '#ff3ea5',
-            neonblue: '#3ff3ff',
+            neonpink: 'rgb(var(--primary-rgb) / <alpha-value>)',
+            neonblue: 'rgb(var(--secondary-rgb) / <alpha-value>)',
             neonviolet: '#8a2be2',
             neonyellow: '#ffe600',
             charcoal: '#0b0b12'
@@ -33,38 +33,49 @@
     }
   </script>
   <style>
-    :root { color-scheme: dark; }
+    :root {
+      color-scheme: dark;
+      --primary: #ff3ea5;
+      --secondary: #3ff3ff;
+      --primary-rgb: 255, 62, 165;
+      --secondary-rgb: 63, 243, 255;
+    }
+    [data-base="medan"] { --primary: #ff7a00; --secondary: #ffd000; --primary-rgb: 255, 122, 0; --secondary-rgb: 255, 208, 0; }
+    [data-base="padang"] { --primary: #10b981; --secondary: #a3e635; --primary-rgb: 16, 185, 129; --secondary-rgb: 163, 230, 53; }
+    [data-base="palembang"] { --primary: #ef4444; --secondary: #fbbf24; --primary-rgb: 239, 68, 68; --secondary-rgb: 251, 191, 36; }
+    [data-base="batam"] { --primary: #0284c7; --secondary: #22d3ee; --primary-rgb: 2, 132, 199; --secondary-rgb: 34, 211, 238; }
+    [data-base="jambi"] { --primary: #8b5cf6; --secondary: #ec4899; --primary-rgb: 139, 92, 246; --secondary-rgb: 236, 72, 153; }
     body { background: #07070c; }
     /* Animated neon gradient backdrop */
     .backdrop {
       position: fixed; inset: -10vmax; z-index: -1; filter: blur(40px) saturate(120%);
       background: conic-gradient(from 0deg,
         #111827 0deg, #111827 30deg,
-        #ff3ea5 90deg, #8a2be2 140deg,
-        #3ff3ff 200deg, #ffe600 260deg,
+        var(--primary) 90deg, #8a2be2 140deg,
+        var(--secondary) 200deg, #ffe600 260deg,
         #111827 320deg, #111827 360deg);
       animation: spin 18s linear infinite;
       opacity: .55;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
     .glass { backdrop-filter: blur(12px) saturate(120%); background: rgba(17, 24, 39, .55); border: 1px solid rgba(255,255,255,.08); }
-    .neon-border { box-shadow: 0 0 0 1px rgba(255, 62, 165, .45), 0 0 30px rgba(255, 62, 165, .35), inset 0 0 30px rgba(63,243,255,.12); }
-    .btn-neon { box-shadow: 0 0 15px rgba(255,62,165,.65), 0 0 40px rgba(63,243,255,.35); }
+    .neon-border { box-shadow: 0 0 0 1px rgba(var(--primary-rgb), .45), 0 0 30px rgba(var(--primary-rgb), .35), inset 0 0 30px rgba(var(--secondary-rgb), .12); }
+    .btn-neon { box-shadow: 0 0 15px rgba(var(--primary-rgb), .65), 0 0 40px rgba(var(--secondary-rgb), .35); }
     .shine { position: relative; overflow: hidden; }
     .shine::after { content:""; position:absolute; inset:auto -20% -20% -20%; top:-150%; height:200%; transform: rotate(25deg); background: linear-gradient(90deg, transparent, rgba(255,255,255,.2), transparent); animation: sweep 5.2s ease-in-out infinite; }
     @keyframes sweep { 0% { left:-150%; } 50% { left:150%; } 100% { left:150%; } }
   </style>
 </head>
-<body class="text-white font-display selection:bg-neonpink/30">
+<body data-base="pekanbaru" class="text-white font-display selection:bg-neonpink/30">
   <div class="backdrop" aria-hidden="true"></div>  <!-- Header / Nav -->  <header class="sticky top-0 z-40 backdrop-blur border-b border-white/10 bg-black/30">
     <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
       <a href="#top" class="flex items-center gap-3 group">
         <svg width="28" height="28" viewBox="0 0 24 24" fill="none" class="drop-shadow" aria-hidden="true">
-          <path d="M12 2l3.09 6.26L22 9.27l-5 4.88L18.18 22 12 18.77 5.82 22 7 14.15l-5-4.88 6.91-1.01L12 2z" stroke="#ff3ea5" stroke-width="1.2" fill="url(#g)"/>
+          <path d="M12 2l3.09 6.26L22 9.27l-5 4.88L18.18 22 12 18.77 5.82 22 7 14.15l-5-4.88 6.91-1.01L12 2z" stroke="var(--primary)" stroke-width="1.2" fill="url(#g)"/>
           <defs>
             <linearGradient id="g" x1="0" y1="0" x2="24" y2="24" gradientUnits="userSpaceOnUse">
-              <stop stop-color="#ff3ea5"/>
-              <stop offset="1" stop-color="#3ff3ff"/>
+              <stop stop-color="var(--primary)"/>
+              <stop offset="1" stop-color="var(--secondary)"/>
             </linearGradient>
           </defs>
         </svg>
@@ -114,7 +125,7 @@
         <div class="mt-6 flex flex-wrap items-center gap-3">
           <a href="#rules" class="rounded-full px-4 py-2 border border-white/20 hover:border-neonpink/60 hover:text-neonpink transition">Lihat Rules</a>
           <a href="pekanbaru.html" class="btn-neon rounded-full px-5 py-2.5 bg-neonpink font-semibold hover:scale-[1.02] active:scale-95 transition">Kirim Menfess Pekanbaru</a>
-          <a href="medan.html" class="btn-neon rounded-full px-5 py-2.5 bg-neonpink font-semibold hover:scale-[1.02] active:scale-95 transition">Kirim Menfess Medan</a>
+          <a href="medan.html" data-base="medan" class="btn-neon rounded-full px-5 py-2.5 bg-neonpink font-semibold hover:scale-[1.02] active:scale-95 transition">Kirim Menfess Medan</a>
         </div>
         <div class="mt-6 text-xs text-white/70">
           <span class="inline-flex items-center gap-2 rounded-full px-3 py-1 border border-white/10 bg-white/5">
@@ -222,10 +233,10 @@
       <p class="mt-2 text-white/80">Saat ini base aktif:<br>- <strong>Pekanbaru</strong><br>- <strong>Medan</strong><br><br>Base lain akan menyusul.</p>
       <div class="mt-6 grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <!-- Pekanbaru Active -->
-        <article class="glass rounded-2xl p-5 border border-white/10 flex flex-col">
+        <article data-base="pekanbaru" class="glass rounded-2xl p-5 border border-white/10 flex flex-col">
           <div class="flex items-center justify-between">
             <h3 class="text-xl font-bold">Pekanbaru</h3>
-            <span class="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">Aktif</span>
+            <span class="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full bg-neonpink/20 text-neonpink border border-neonpink/30">Aktif</span>
           </div>
           <p class="mt-2 text-white/80 text-sm">Handle X/Twitter: <span class="text-neonpink font-semibold">@menfesssumatra</span></p>
           <div class="mt-4 inline-flex gap-3">
@@ -233,10 +244,10 @@
             <a href="https://x.com/MENFESSSUMATRA" target="_blank" class="rounded-full px-4 py-2 border border-white/20 hover:text-neonpink hover:border-neonpink/60 transition">Lihat Akun</a>
           </div>
         </article>
-        <article class="glass rounded-2xl p-5 border border-white/10 flex flex-col">
+        <article data-base="medan" class="glass rounded-2xl p-5 border border-white/10 flex flex-col">
           <div class="flex items-center justify-between">
             <h3 class="text-xl font-bold">Medan</h3>
-            <span class="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">Aktif</span>
+            <span class="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full bg-neonpink/20 text-neonpink border border-neonpink/30">Aktif</span>
           </div>
           <p class="mt-2 text-white/80 text-sm">Handle X/Twitter: <span class="text-neonpink font-semibold">@menfesssumatra2</span></p>
           <div class="mt-4 inline-flex gap-3">
