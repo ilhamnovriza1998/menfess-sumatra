@@ -647,12 +647,12 @@ submitBtn.innerHTML = '🚀 Kirim Menfess';
            return;
         }
 
-        const text = `${textValue}\n#pku`;
+        const text = `${textValue}\n#SMTR`;
         formData.append('text', text);
         formData.append('type', 'text');
         
       } else { // Mode Photo
-        const caption = menfessCaption.value ? `${menfessCaption.value}\n#pku` : '#pku';
+        const caption = menfessCaption.value ? `${menfessCaption.value}\n#SMTR` : '#SMTR';
         formData.append('text', caption);
         formData.append('type', 'photo');
         
