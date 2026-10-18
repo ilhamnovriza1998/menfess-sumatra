@@ -1,14 +1,15 @@
-<!DOCTYPE html><html lang="id">
+<!DOCTYPE html>
+<html lang="id">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Menfess Sumatra 🍭</title>
-  <meta name="description" content="Kirim menfess teks atau foto secara anonim. Base aktif: Pekanbaru dan Medan. Base lain menyusul. Ikuti rules & ketentuan sebelum kirim, ya!" />
+  <meta name="description" content="Kirim menfess teks atau foto secara anonim ke ALTER SUMATRA. Ikuti rules & ketentuan sebelum kirim, ya!" />
   <meta name="theme-color" content="#8a2be2" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
-  <!-- Tailwind via CDN for fast iteration -->
+  <!-- Tailwind via CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -26,7 +27,7 @@
             glow: '0 0 25px rgba(255, 62, 165, .45), 0 0 60px rgba(63, 243, 255, .25)'
           },
           backgroundImage: {
-            grid:"radial-gradient(circle at 1px 1px, rgba(255,255,255,.08) 1px, transparent 0)",
+            grid: "radial-gradient(circle at 1px 1px, rgba(255,255,255,.08) 1px, transparent 0)",
           }
         }
       }
@@ -46,7 +47,6 @@
     [data-base="batam"] { --primary: #0284c7; --secondary: #22d3ee; --primary-rgb: 2, 132, 199; --secondary-rgb: 34, 211, 238; }
     [data-base="jambi"] { --primary: #8b5cf6; --secondary: #ec4899; --primary-rgb: 139, 92, 246; --secondary-rgb: 236, 72, 153; }
     body { background: #07070c; }
-    /* Animated neon gradient backdrop */
     .backdrop {
       position: fixed; inset: -10vmax; z-index: -1; filter: blur(40px) saturate(120%);
       background: conic-gradient(from 0deg,
@@ -67,7 +67,10 @@
   </style>
 </head>
 <body data-base="pekanbaru" class="text-white font-display selection:bg-neonpink/30">
-  <div class="backdrop" aria-hidden="true"></div>  <!-- Header / Nav -->  <header class="sticky top-0 z-40 backdrop-blur border-b border-white/10 bg-black/30">
+  <div class="backdrop" aria-hidden="true"></div>
+
+  <!-- Header / Nav -->
+  <header class="sticky top-0 z-40 backdrop-blur border-b border-white/10 bg-black/30">
     <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
       <a href="#top" class="flex items-center gap-3 group">
         <svg width="28" height="28" viewBox="0 0 24 24" fill="none" class="drop-shadow" aria-hidden="true">
@@ -86,13 +89,14 @@
       <nav class="hidden sm:flex items-center gap-6 text-sm opacity-90">
         <a href="#rules" class="hover:text-neonpink transition">Rules</a>
         <a href="#ketentuan" class="hover:text-neonpink transition">Ketentuan</a>
+        <a href="#kontak" class="hover:text-neonpink transition">Kontak</a>
       </nav>
       <div id="baseDropdown" class="relative group">
         <button id="baseDropdownButton" type="button" class="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/5 px-4 py-2 text-sm font-semibold hover:border-neonpink/60 hover:text-neonpink transition" aria-expanded="false" aria-controls="baseDropdownMenu">
           Base <span aria-hidden="true">▼</span>
         </button>
         <div id="baseDropdownMenu" class="hidden group-hover:block absolute right-0 mt-3 w-56 glass rounded-xl border border-white/10 p-2 shadow-glow z-50">
-          <a href="sumatra.html" class="block rounded-lg px-3 py-2 text-sm hover:bg-white/10 hover:text-neonpink transition">Pekanbaru</a>
+          <a href="sumatra.html" class="block rounded-lg px-3 py-2 text-sm hover:bg-white/10 hover:text-neonpink transition">Pekanbaru (Sumatra)</a>
           <a href="medan.html" class="block rounded-lg px-3 py-2 text-sm hover:bg-white/10 hover:text-neonpink transition">Medan</a>
           <div class="my-2 border-t border-white/10"></div>
           <span class="flex items-center justify-between gap-3 rounded-lg px-3 py-2 text-sm text-white/55 cursor-not-allowed" aria-disabled="true">
@@ -110,7 +114,10 @@
         </div>
       </div>
     </div>
-  </header>  <!-- Hero -->  <section id="top" class="relative">
+  </header>
+
+  <!-- Hero -->
+  <section id="top" class="relative">
     <div class="max-w-6xl mx-auto px-4 pt-16 pb-10 grid md:grid-cols-2 gap-8 items-center">
       <div>
         <h1 class="text-4xl sm:text-5xl font-extrabold leading-tight drop-shadow">
@@ -119,20 +126,18 @@
           <span class="block text-2xl sm:text-3xl mt-3 text-white/80">Anonim</span>
         </h1>
         <p class="mt-5 text-white/85 max-w-prose">
-          Ini adalah halaman utama <strong>Menfess Sumatra</strong>. Baca rules & ketentuan di bawah
-          dulu ya. Pilih base yang ingin digunakan: Pekanbaru atau Medan.
+          Kirim menfess teks atau foto secara anonim ke <strong>ALTER SUMATRA</strong>. Silakan baca rules & ketentuan terlebih dahulu sebelum mengirim menfess.
         </p>
         <div class="mt-6 flex flex-wrap items-center gap-3">
           <a href="#rules" class="rounded-full px-4 py-2 border border-white/20 hover:border-neonpink/60 hover:text-neonpink transition">Lihat Rules</a>
-          <a href="sumatra.html" class="btn-neon rounded-full px-5 py-2.5 bg-neonpink font-semibold hover:scale-[1.02] active:scale-95 transition">Kirim Menfess Pekanbaru</a>
-          <a href="medan.html" data-base="medan" class="btn-neon rounded-full px-5 py-2.5 bg-neonpink font-semibold hover:scale-[1.02] active:scale-95 transition">Kirim Menfess Medan</a>
+          <a href="sumatra.html" class="btn-neon rounded-full px-5 py-2.5 bg-neonpink font-semibold hover:scale-[1.02] active:scale-95 transition">Kirim Menfess Sumatra</a>
         </div>
-        <div class="mt-6 text-xs text-white/70">
+        <div class="mt-6 flex flex-wrap items-center gap-2 text-xs text-white/70">
           <span class="inline-flex items-center gap-2 rounded-full px-3 py-1 border border-white/10 bg-white/5">
             <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-            Posting otomatis ke Twitter/x Masing" Base 
+            Posting otomatis ke media sosial
           </span>
-          <span class="ml-2 inline-flex items-center gap-2 rounded-full px-3 py-1 border border-white/10 bg-white/5">
+          <span class="inline-flex items-center gap-2 rounded-full px-3 py-1 border border-white/10 bg-white/5">
             QRIS otomatis — <strong>aktif</strong>
           </span>
         </div>
@@ -156,7 +161,8 @@
                           <span>•</span>
                           <span>2m</span>
                         </div>
-                        <p class="mt-1">Titip salam buat <span class="text-neonpink font-semibold">si A</span> yang suka jajan di Panam. Kamu keren! ✨</p>
+                        <p class="mt-1">Halo 53mu@, titip s@l@m buat si A ya!</p>
+                        <p class="mt-1">#SMTR</p>
                         <div class="mt-2 flex gap-3 text-white/60 text-xs">
                           <span>❤️ 128</span>
                           <span>🔁 23</span>
@@ -172,7 +178,10 @@
         </div>
       </div>
     </div>
-  </section>  <!-- Rules -->  <section id="rules" class="py-12">
+  </section>
+
+  <!-- Rules -->
+  <section id="rules" class="py-12">
     <div class="max-w-6xl mx-auto px-4">
       <h2 class="text-3xl font-extrabold">Rules <span class="text-neonpink">Menfess</span></h2>
       <p class="mt-2 text-white/80">Biar base tetap aman & nyaman, patuhi aturan ini ya:</p>
@@ -189,15 +198,18 @@
         <div class="glass rounded-xl p-5 border border-white/10">
           <ul class="space-y-3 leading-relaxed">
             <li>⚠️ Menfess yang mengandung penipuan, promosi scam, atau link mencurigakan akan ditolak.</li>
-            <li>🤖 Menfess diproses otomatis setelah pembayaran berhasil diverifikasi.</li>
+            <li>🤖 Menfess diproses otomatis setelah pembayaran berhasil dikonfirmasi.</li>
             <li>🧹 Admin berhak menolak, menghapus, atau membatasi menfess yang melanggar aturan.</li>
-            <li>📢 Semua menfess yang dikirim akan dipublikasikan ke ALTER BASE di X/Twitter.</li>
+            <li>📢 Semua menfess yang dikirim akan dipublikasikan ke ALTER SUMATRA.</li>
             <li>✅ Dengan mengirim menfess, kamu dianggap setuju dengan seluruh aturan yang berlaku.</li>
           </ul>
         </div>
       </div>
     </div>
-  </section>  <!-- Ketentuan -->  <section id="ketentuan" class="py-12 pt-2">
+  </section>
+
+  <!-- Ketentuan -->
+  <section id="ketentuan" class="py-12 pt-2">
     <div class="max-w-6xl mx-auto px-4">
       <h2 class="text-3xl font-extrabold">Ketentuan <span class="text-neonblue">Pengiriman</span></h2>
       <div class="mt-6 grid lg:grid-cols-3 gap-4">
@@ -205,93 +217,84 @@
           <h3 class="font-bold text-lg">Format Menfess</h3>
           <ul class="mt-3 space-y-2 text-white/85 text-sm">
             <li>• Pilih: <em>Teks</em> atau <em>Foto + Caption</em>.</li>
-            <li>• Maks 280–400 karakter agar pas di X/Twitter.</li>
-            <li>• Sertakan tag lokasi bila relevan: #Pekanbaru, #Panam, dll.</li>
+            <li>• Maksimum karakter disesuaikan agar pas dibaca.</li>
+            <li>• Sertakan hashtag bila perlu.</li>
           </ul>
         </div>
         <div class="glass rounded-xl p-5 border border-white/10">
           <h3 class="font-bold text-lg">Moderasi</h3>
           <ul class="mt-3 space-y-2 text-white/85 text-sm">
-            <li>• Admin cek kesesuaian rules & kelayakan tayang.</li>
-            <li>• Revisi kecil mungkin dilakukan.</li>
-            <li>• Postingan ditolak tidak akan dipublikasikan.</li>
+            <li>• Sistem dan admin mengecek kesesuaian rules & kelayakan tayang.</li>
+            <li>• Filter kata/leet text berlaku untuk keamanan menfess.</li>
+            <li>• Postingan yang melanggar aturan tidak akan dipublikasikan.</li>
           </ul>
         </div>
         <div class="glass rounded-xl p-5 border border-white/10">
           <h3 class="font-bold text-lg">Privasi</h3>
           <ul class="mt-3 space-y-2 text-white/85 text-sm">
-            <li>• Pengirim anonim; kami tidak mempublikasikan identitas.</li>
+            <li>• Pengirim 100% anonim; kami tidak mempublikasikan identitas.</li>
             <li>• Hindari menyebut nama lengkap tanpa izin.</li>
             <li>• Lampirkan bukti/blurring bila menyinggung pihak ketiga.</li>
           </ul>
         </div>
       </div>
+    </div>
+  </section>
 
-  </section>  <!-- Base Section -->  <section id="bases" class="py-12">
+  <!-- Base Section -->
+  <section id="bases" class="py-12">
     <div class="max-w-6xl mx-auto px-4">
       <h2 class="text-3xl font-extrabold">Daftar Base</h2>
-      <p class="mt-2 text-white/80">Saat ini base aktif:<br>- <strong>Pekanbaru</strong><br>- <strong>Medan</strong><br><br>Base lain akan menyusul.</p>
+      <p class="mt-2 text-white/80">Base aktif saat ini: <strong>Sumatra</strong>. Base lain akan segera menyusul.</p>
       <div class="mt-6 grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        <!-- Pekanbaru Active -->
+        <!-- Sumatra Active -->
         <article data-base="pekanbaru" class="glass rounded-2xl p-5 border border-white/10 flex flex-col">
           <div class="flex items-center justify-between">
-            <h3 class="text-xl font-bold">Pekanbaru</h3>
+            <h3 class="text-xl font-bold">Sumatra</h3>
             <span class="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full bg-neonpink/20 text-neonpink border border-neonpink/30">Aktif</span>
           </div>
-          <p class="mt-2 text-white/80 text-sm">Handle X/Twitter: <span class="text-neonpink font-semibold">@menfesssumatra</span></p>
-          <div class="mt-4 inline-flex gap-3">
-            <a href="sumatra.html" class="btn-neon rounded-full px-4 py-2 bg-neonpink font-semibold">Kirim Menfess</a>
-            <a href="https://x.com/MENFESSSUMATRA" target="_blank" class="rounded-full px-4 py-2 border border-white/20 hover:text-neonpink hover:border-neonpink/60 transition">Lihat Akun</a>
+          <p class="mt-2 text-white/80 text-sm">Base resmi: <span class="text-neonpink font-semibold">ALTER SUMATRA</span></p>
+          <div class="mt-4 inline-flex flex-wrap gap-2">
+            <a href="sumatra.html" class="btn-neon rounded-full px-4 py-2 bg-neonpink font-semibold text-sm">Kirim Menfess</a>            
           </div>
         </article>
-        <article data-base="medan" class="glass rounded-2xl p-5 border border-white/10 flex flex-col">
-          <div class="flex items-center justify-between">
-            <h3 class="text-xl font-bold">Medan</h3>
-            <span class="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full bg-neonpink/20 text-neonpink border border-neonpink/30">Aktif</span>
-          </div>
-          <p class="mt-2 text-white/80 text-sm">Handle X/Twitter: <span class="text-neonpink font-semibold">@menfesssumatra2</span></p>
-          <div class="mt-4 inline-flex gap-3">
-            <a href="medan.html" class="btn-neon rounded-full px-4 py-2 bg-neonpink font-semibold">Kirim Menfess</a>
-            <a href="https://x.com/menfesssumatra2" target="_blank" class="rounded-full px-4 py-2 border border-white/20 hover:text-neonpink hover:border-neonpink/60 transition">Lihat Akun</a>
-          </div>
-        </article>
-        <!-- Coming soon cards -->
-        <article class="glass rounded-2xl p-5 border border-white/10 flex flex-col opacity-70">
-          <div class="flex items-center justify-between">
-            <h3 class="text-xl font-bold">Padang</h3>
-            <span class="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full bg-yellow-500/20 text-yellow-300 border border-yellow-400/30">Coming Soon</span>
-          </div>
-          <p class="mt-2 text-white/70 text-sm">Sedang disiapkan. Tunggu pengumuman ya!</p>
-          <div class="mt-4 inline-flex gap-3">
-            <button disabled class="rounded-full px-4 py-2 border border-white/10 cursor-not-allowed">Kirim Menfess</button>
-            <button disabled class="rounded-full px-4 py-2 border border-white/10 cursor-not-allowed">Lihat Akun</button>
-          </div>
-        </article>
+
+        
+        
       </div>
     </div>
-    
-    <section id="kontak" class="py-12">
+  </section>
+
+  <!-- Kontak Section -->
+  <section id="kontak" class="py-12">
     <div class="max-w-6xl mx-auto px-4">
-        <h2 class="text-3xl font-extrabold">Kontak, Saran, & Pengaduan</h2>
-        <p class="mt-2 text-white/80">Kami terbuka untuk saran atau pengaduan terkait platform ini. Silakan kirimkan pesan melalui form di bawah.</p>
-        <div class="mt-6">
-            <form action="#" method="POST" class="grid gap-4">
-                <label for="name" class="text-white/90">Nama (Opsional)</label>
-                <input type="text" id="name" name="name" class="p-3 bg-white/5 border border-white/20 rounded-lg focus:outline-none" placeholder="Nama Anda">
+      <h2 class="text-3xl font-extrabold">Kontak, Saran, & Pengaduan</h2>
+      <p class="mt-2 text-white/80">Kami terbuka untuk saran atau pengaduan terkait platform ini. Silakan kirimkan pesan melalui form di bawah.</p>
+      <div class="mt-6">
+        <form action="#" method="POST" class="grid gap-4 max-w-2xl">
+          <div>
+            <label for="name" class="block text-white/90 mb-1">Nama (Opsional)</label>
+            <input type="text" id="name" name="name" class="w-full p-3 bg-white/5 border border-white/20 rounded-lg focus:outline-none focus:border-neonpink" placeholder="Nama Anda">
+          </div>
 
-                <label for="email" class="text-white/90">Email (Opsional)</label>
-                <input type="email" id="email" name="email" class="p-3 bg-white/5 border border-white/20 rounded-lg focus:outline-none" placeholder="Email Anda">
+          <div>
+            <label for="email" class="block text-white/90 mb-1">Email (Opsional)</label>
+            <input type="email" id="email" name="email" class="w-full p-3 bg-white/5 border border-white/20 rounded-lg focus:outline-none focus:border-neonpink" placeholder="Email Anda">
+          </div>
 
-                <label for="message" class="text-white/90">Pesan/Saran/Pengaduan</label>
-                <textarea id="message" name="message" rows="4" class="p-3 bg-white/5 border border-white/20 rounded-lg focus:outline-none" placeholder="Tulis pesan Anda..."></textarea>
+          <div>
+            <label for="message" class="block text-white/90 mb-1">Pesan / Saran / Pengaduan</label>
+            <textarea id="message" name="message" rows="4" class="w-full p-3 bg-white/5 border border-white/20 rounded-lg focus:outline-none focus:border-neonpink" placeholder="Tulis pesan Anda..."></textarea>
+          </div>
 
-                <button type="submit" class="btn-neon rounded-full px-5 py-2.5 bg-neonpink font-semibold hover:scale-[1.02] active:scale-95 transition">Kirim</button>
-            </form>
-        </div>
+          <button type="submit" class="btn-neon rounded-full px-6 py-2.5 bg-neonpink font-semibold hover:scale-[1.02] active:scale-95 transition w-fit">Kirim Pesan</button>
+        </form>
+      </div>
     </div>
-</section>
-    
-  </section>  <!-- Footer -->  <footer class="mt-10 border-t border-white/10">
+  </section>
+
+  <!-- Footer -->
+  <footer class="mt-10 border-t border-white/10">
     <div class="max-w-6xl mx-auto px-4 py-8 text-sm text-white/70 flex flex-col sm:flex-row items-center justify-between gap-4">
       <p>© <span id="year"></span> Menfess Sumatra. All rights reserved.</p>
       <div class="flex items-center gap-3">
@@ -299,34 +302,44 @@
         <span class="opacity-40">•</span>
         <a class="hover:text-neonpink" href="#ketentuan">Ketentuan</a>
         <span class="opacity-40">•</span>
-        <a class="hover:text-neonpink" href="#">Kebijakan Privasi</a>
+        <a class="hover:text-neonpink" href="#kontak">Kontak</a>
       </div>
     </div>
-  </footer>  <script>
-    // year
+  </footer>
+
+  <script>
+    // Set Tahun Otomatis
     document.getElementById('year').textContent = new Date().getFullYear();
-    // smooth anchor scrolling
-    document.querySelectorAll('a[href^="#"]').forEach(a=>{
-      a.addEventListener('click', e=>{
-        const id=a.getAttribute('href');
-        if(id.length>1){ e.preventDefault(); document.querySelector(id).scrollIntoView({behavior:'smooth', block:'start'}); }
-      })
-    })
-    // base dropdown
+
+    // Smooth Anchor Scrolling
+    document.querySelectorAll('a[href^="#"]').forEach(a => {
+      a.addEventListener('click', e => {
+        const id = a.getAttribute('href');
+        if (id.length > 1) {
+          e.preventDefault();
+          document.querySelector(id).scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      });
+    });
+
+    // Base Dropdown Handling
     const baseDropdown = document.getElementById('baseDropdown');
     const baseDropdownButton = document.getElementById('baseDropdownButton');
     const baseDropdownMenu = document.getElementById('baseDropdownMenu');
-    baseDropdownButton.addEventListener('click', e=>{
+
+    baseDropdownButton.addEventListener('click', e => {
       e.stopPropagation();
       const isOpen = !baseDropdownMenu.classList.contains('hidden');
       baseDropdownMenu.classList.toggle('hidden', isOpen);
       baseDropdownButton.setAttribute('aria-expanded', String(!isOpen));
     });
-    document.addEventListener('click', e=>{
-      if(!baseDropdown.contains(e.target)){
+
+    document.addEventListener('click', e => {
+      if (!baseDropdown.contains(e.target)) {
         baseDropdownMenu.classList.add('hidden');
         baseDropdownButton.setAttribute('aria-expanded', 'false');
       }
     });
-  </script></body>
-          </html>
+  </script>
+</body>
+</html>
