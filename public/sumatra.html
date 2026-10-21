@@ -4,6 +4,10 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Kirim Menfess - Base SMTR</title>
+  <!-- FAVICON -->
+  <link rel="icon" type="image/png" href="icon.png">
+  <link rel="apple-touch-icon" href="icon.png">
+  
   <meta name="description" content="Kirim menfess teks atau foto untuk Base SMTR. Anonim dan masuk Twitter/X Alter Base SMTR setelah pembayaran berhasil." />
   <meta name="theme-color" content="#ff3ea5" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -258,7 +262,7 @@
           </a>
 
           <!-- Threads -->
-          <a href="https://threads.net/@menfesssumatra" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-4 py-2 bg-neutral-800 hover:bg-neutral-700 border border-white/20 rounded-full text-sm font-semibold transition">
+          <a href="https://threads.net/@AlterSMTR" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-4 py-2 bg-neutral-800 hover:bg-neutral-700 border border-white/20 rounded-full text-sm font-semibold transition">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.75c-5.385 0-9.75-4.365-9.75-9.75S6.615 2.25 12 2.25s9.75 4.365 9.75 9.75c0 5.01-3.774 9.15-8.625 9.69-.51.057-.875-.34-.875-.851 0-.441.332-.81.768-.865 4.02-.51 7.232-3.957 7.232-8.124 0-4.521-3.729-8.25-8.25-8.25S3.75 7.479 3.75 12s3.729 8.25 8.25 8.25c1.866 0 3.585-.624 4.965-1.68.375-.288.9-.228 1.191.135.291.366.222.894-.144 1.185-1.659 1.272-3.729 2.01-5.962 2.01zm3.801-6.186c-.957.957-2.316 1.488-3.801 1.488-2.898 0-5.25-2.352-5.25-5.25s2.352-5.25 5.25-5.25 5.25 2.352 5.25 5.25c0 1.254-.42 2.457-1.2 3.429-.273.342-.786.396-1.128.123-.342-.273-.396-.786-.123-1.128.594-.741.903-1.659.903-2.624 0-2.067-1.683-3.75-3.75-3.75S8.25 9.933 8.25 12s1.683 3.75 3.75 3.75c1.077 0 2.061-.384 2.754-1.077.303-.303.795-.303 1.098 0 .303.303.303.795 0 1.098z"/></svg>
             Threads
           </a>
@@ -307,10 +311,39 @@
     </div>
   </footer>
 
-  <script>
+ <script>
     document.getElementById('year').textContent = new Date().getFullYear();
 
     const API_URL = '/api/post-to-telegram';
+
+    // -------------------------------------------------------------
+    // FUNGSI KONVERSI PREVIEW (AEIOG + ZERO-WIDTH SPACE)
+    // -------------------------------------------------------------
+    function convertToLeetPreview(text) {
+      if (!text) return '';
+
+      const replacements = {
+        a: '@', e: '3', i: '!', o: '0', g: '9',
+        A: '4', E: '3', I: '!', O: '0', G: '9'
+      };
+
+      // 1. Ubah huruf a, e, i, o, g (tanpa huruf u)
+      const leetText = String(text).replace(/[aeiogAEIOG]/g, (char) => {
+        return replacements[char] || char;
+      });
+
+      // 2. Sisipkan \u200B di tengah kata (> 3 huruf)
+      return leetText
+        .split(' ')
+        .map((word) => {
+          if (word.length > 3) {
+            const mid = Math.floor(word.length / 2);
+            return word.slice(0, mid) + '\u200B' + word.slice(mid);
+          }
+          return word;
+        })
+        .join(' ');
+    }
 
     // Toggle form type
     const typeSelect = document.getElementById("type");
@@ -335,7 +368,7 @@
       }
     });
 
-    // Character counter (380 karena nanti ditambah #pku = ~20 char)
+    // Character counter
     menfessText.addEventListener("input", function() {
       charCount.textContent = `${this.value.length}/380`;
       if (this.value.length > 380) {
@@ -348,7 +381,9 @@
 
     menfessCaption.addEventListener("input", updatePreview);
 
-    // Update preview
+    // =============================================================
+    // UPDATE PREVIEW (DIPERBARUI DENGAN CONVERT TO LEET)
+    // =============================================================
     function updatePreview() {
       const type = typeSelect.value;
       
@@ -358,7 +393,9 @@
           previewSection.classList.remove("hidden");
           textPreview.classList.remove("hidden");
           photoPreview.classList.add("hidden");
-          document.getElementById("previewText").textContent = text;
+          
+          // Menggunakan convertToLeetPreview di sini
+          document.getElementById("previewText").textContent = convertToLeetPreview(text);
         } else {
           previewSection.classList.add("hidden");
         }
@@ -372,7 +409,8 @@
           photoPreview.classList.remove("hidden");
           
           if (caption) {
-            document.getElementById("previewCaption").textContent = caption;
+            // Menggunakan convertToLeetPreview di sini
+            document.getElementById("previewCaption").textContent = convertToLeetPreview(caption);
           } else {
             document.getElementById("previewCaption").textContent = "";
           }
@@ -470,161 +508,105 @@
 
     // Function Pop Up Pembayaran
     function showQRISPopup(payment) {
-
-  document
-    .getElementById('qrisPopup')
-    .classList
-    .remove('hidden');
-
-  document
-    .getElementById('qrisImage')
-    .src =
-'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=' +
-encodeURIComponent(payment.qr_string);
-
-  document
-    .getElementById('qrisAmount')
-    .textContent =
-      'Rp ' + Number(payment.amount).toLocaleString('id-ID');
-}
-
- async function createPayment(formData, status, submitBtn, form) {
-
-  try {
-
-    status.textContent = "⏳ Menyiapkan menfess dan membuat QRIS...";
-    status.className = "text-center mt-4 text-sm text-yellow-400";
-
-    const response = await fetch(API_URL, {
-      method: 'POST',
-      body: formData
-    });
-
-    const result = await response.json();
-
-    console.log("CREATE PAYMENT:", result);
-
-    if (!result.success) {
-
-      status.textContent = "❌ " + (result.error || result.message || 'Gagal membuat pembayaran');
-      status.className = "text-center mt-4 text-sm text-red-400";
-
-      submitBtn.disabled = false;
-      submitBtn.innerHTML = '🚀 Kirim Menfess';
-
-      return;
+      document.getElementById('qrisPopup').classList.remove('hidden');
+      document.getElementById('qrisImage').src = 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=' + encodeURIComponent(payment.qr_string);
+      document.getElementById('qrisAmount').textContent = 'Rp ' + Number(payment.amount).toLocaleString('id-ID');
     }
 
-    const payment = result.data;
+    async function createPayment(formData, status, submitBtn, form) {
+      try {
+        status.textContent = "⏳ Menyiapkan menfess dan membuat QRIS...";
+        status.className = "text-center mt-4 text-sm text-yellow-400";
 
-    console.log("PAYMENT:", payment);
+        const response = await fetch(API_URL, {
+          method: 'POST',
+          body: formData
+        });
 
-    // TAMPILKAN QRIS
-    showQRISPopup(payment);
+        const result = await response.json();
+        console.log("CREATE PAYMENT:", result);
 
-    // MULAI CEK STATUS PEMBAYARAN
-    checkPaymentStatus(
-      payment.reference,
-      formData,
-      status,
-      submitBtn,
-      form
-    );
+        if (!result.success) {
+          status.textContent = "❌ " + (result.error || result.message || 'Gagal membuat pembayaran');
+          status.className = "text-center mt-4 text-sm text-red-400";
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = '🚀 Kirim Menfess';
+          return;
+        }
 
-  } catch (error) {
+        const payment = result.data;
+        console.log("PAYMENT:", payment);
 
-    console.error(error);
+        showQRISPopup(payment);
 
-    status.textContent = "❌ Gagal membuat pembayaran";
-    status.className = "text-center mt-4 text-sm text-red-400";
+        checkPaymentStatus(
+          payment.reference,
+          formData,
+          status,
+          submitBtn,
+          form
+        );
 
-    submitBtn.disabled = false;
-    submitBtn.innerHTML = '🚀 Kirim Menfess';
-  }
-}
-
-async function checkPaymentStatus(
-  reference,
-  formData,
-  status,
-  submitBtn,
-  form
-) {
-
-  console.log("CHECK REFERENCE:", reference);
-
-  const interval = setInterval(async () => {
-
-    try {
-
-      const response = await fetch(
-        '/api/check-payment?reference=' + reference
-      );
-
-      const result = await response.json();
-
-      console.log("STATUS PAYMENT:", result);
-
-      if (
-        result.success &&
-        result.paid
-      ) {
-
-        clearInterval(interval);
-
-        document
-          .getElementById('paymentStatus')
-          .innerHTML =
-            '<span class="text-green-400 font-bold">✅ Pembayaran berhasil</span>';
-
-        incrementMenfessCount();
-
-showSuccessPopup();
-
-form.reset();
-
-document.getElementById("imagePreview").innerHTML = "";
-document.getElementById("imagePreview").classList.add("hidden");
-document.getElementById("charCount").textContent = "0/380";
-document.getElementById("previewSection").classList.add("hidden");
-
-status.textContent = "";
-submitBtn.disabled = false;
-submitBtn.innerHTML = '🚀 Kirim Menfess';
-
-        setTimeout(() => {
-
-          document
-            .getElementById('qrisPopup')
-            .classList
-            .add('hidden');
-
-        }, 1500);
+      } catch (error) {
+        console.error(error);
+        status.textContent = "❌ Gagal membuat pembayaran";
+        status.className = "text-center mt-4 text-sm text-red-400";
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '🚀 Kirim Menfess';
       }
-
-    } catch (error) {
-
-      console.log("CHECK ERROR:", error);
-
     }
 
-  }, 5000);
-}
+    async function checkPaymentStatus(reference, formData, status, submitBtn, form) {
+      console.log("CHECK REFERENCE:", reference);
 
-    // Kirim ke Telegram via API Vercel - HANYA GUNAKAN SATU LISTENER INI
+      const interval = setInterval(async () => {
+        try {
+          const response = await fetch('/api/check-payment?reference=' + reference);
+          const result = await response.json();
+          console.log("STATUS PAYMENT:", result);
+
+          if (result.success && result.paid) {
+            clearInterval(interval);
+
+            document.getElementById('paymentStatus').innerHTML = '<span class="text-green-400 font-bold">✅ Pembayaran berhasil</span>';
+
+            incrementMenfessCount();
+            showSuccessPopup();
+            form.reset();
+
+            document.getElementById("imagePreview").innerHTML = "";
+            document.getElementById("imagePreview").classList.add("hidden");
+            document.getElementById("charCount").textContent = "0/380";
+            document.getElementById("previewSection").classList.add("hidden");
+
+            status.textContent = "";
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '🚀 Kirim Menfess';
+
+            setTimeout(() => {
+              document.getElementById('qrisPopup').classList.add('hidden');
+            }, 1500);
+          }
+
+        } catch (error) {
+          console.log("CHECK ERROR:", error);
+        }
+
+      }, 5000);
+    }
+
+    // Submit handler
     document.getElementById("menfessForm").addEventListener("submit", async (e) => {
       e.preventDefault();
       const status = document.getElementById("status");
       const submitBtn = e.target.querySelector('button[type="submit"]');
       
-      // 1. Cek Batasan Kirim
       if (!canSendMenfess()) {
         status.textContent = "❌ Kamu sudah mengirim 5 menfess hari ini. Coba lagi besok!";
         status.className = "text-center mt-4 text-sm text-red-400";
         return;
       }
 
-      // 2. Tampilkan Status Loading
       submitBtn.disabled = true;
       submitBtn.innerHTML = "⏳ Mengirim...";
       status.textContent = "⏳ Menyiapkan pembayaran menfess...";
@@ -634,11 +616,9 @@ submitBtn.innerHTML = '🚀 Kirim Menfess';
       const formData = new FormData();
       formData.append('base', 'PEKANBARU');
 
-      // 3. Persiapan Data dan Validasi
       if (type === "text") {
         const textValue = menfessText.value.trim();
         
-        // Validasi teks kosong (Mode Teks)
         if (!textValue) {
            status.textContent = "⚠️ Teks menfess tidak boleh kosong.";
            status.className = "text-center mt-4 text-sm text-red-400";
@@ -651,14 +631,13 @@ submitBtn.innerHTML = '🚀 Kirim Menfess';
         formData.append('text', text);
         formData.append('type', 'text');
         
-      } else { // Mode Photo
+      } else {
         const caption = menfessCaption.value ? `${menfessCaption.value}\n#SMTR` : '#SMTR';
         formData.append('text', caption);
         formData.append('type', 'photo');
         
         const imageFile = document.getElementById("menfessImage").files[0];
         
-        // Validasi foto kosong (Mode Foto)
         if (!imageFile) {
           status.textContent = "⚠️ Pilih foto terlebih dahulu sebelum mengirim.";
           status.className = "text-center mt-4 text-sm text-red-400";
@@ -670,9 +649,8 @@ submitBtn.innerHTML = '🚀 Kirim Menfess';
         formData.append('image', imageFile);
       }
 
-      // 4. Panggil function pembayaran
       await createPayment(formData, status, submitBtn, e.target);
     });
-  </script>
+</script>
 </body>
 </html>
