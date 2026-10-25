@@ -317,18 +317,18 @@
     const API_URL = '/api/post-to-telegram';
 
     // -------------------------------------------------------------
-    // FUNGSI KONVERSI PREVIEW (AEIOG + ZERO-WIDTH SPACE)
+    // FUNGSI KONVERSI PREVIEW (AI + ZERO-WIDTH SPACE)
     // -------------------------------------------------------------
     function convertToLeetPreview(text) {
       if (!text) return '';
 
       const replacements = {
-        a: '@', e: '3', i: '!', o: '0', g: '9',
-        A: '4', E: '3', I: '!', O: '0', G: '9'
+        a: '4', i: '1',
+        A: '4', I: '1'
       };
 
-      // 1. Ubah huruf a, e, i, o, g (tanpa huruf u)
-      const leetText = String(text).replace(/[aeiogAEIOG]/g, (char) => {
+      // 1. Ubah huruf a, i
+      const leetText = String(text).replace(/[aiAI]/g, (char) => {
         return replacements[char] || char;
       });
 
